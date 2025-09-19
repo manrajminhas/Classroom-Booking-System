@@ -4,4 +4,7 @@ This file is empty right now, but you will need to update it to explain who is i
 
 | V#   | Name     |
 | ---- | -------- |
-| TODO | Fill out |
+| V00975012 | Will Calder |
+| V00998047 | Manraj Minhas |
+| V00989485 | Max Patchell |
+| V01012421 | William Shaw |
