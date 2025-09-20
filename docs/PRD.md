@@ -22,6 +22,9 @@ Registrars, who oversee classroom availability and handle schedule integrity, wi
 
 ## User Stories
 
+User Story #1: Staff Sign-in.
+    https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/1
+
 ## Functional Requirements
 
 ## Quality Attribute Requirements
