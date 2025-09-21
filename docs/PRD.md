@@ -93,9 +93,28 @@ Functional requirements are captured as the following Gitlab issues:
 - https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/47
 
 ## Quality Attribute Requirements
-Quality attribute requirements are captured as the following Gitlab issues:  
+Quality attribute requirements and scenarios are captured as the following Gitlab issues:  
+
+- https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/48
+
+- https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/49
+
+- https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/50
+
+- https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/51
+
+- https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/52
 
 They are also presented as the following utility tree:  
+
+```mermaid
+graph LR;
+    Utility-->Usability-->U1["Efficiency of Operations"]-->U2["It takes 6 clicks or less for a staff member to search for classrooms filtered by date, time, building, and capacity, then book an available room if one matches their criteria. (M, L)"];
+    Utility-->Security-->S1["Separation of Roles"]-->S2["The system does not allow staff members and registrars to access the system health and configuration page. The System Configuration tab is not visible in the menu bar, and pasting in the link results in an Access Denied page. (H, M)"];
+    Utility-->Availability-->A1["Editing Bookings"]-->A2["The system allows staff members to edit their own upcoming booking times and then presents the original bookings as available to other users. (H, M)"];
+    Utility-->Modifiability-->M1["Adding Rooms"]-->M2["A registrar can import a list of classrooms and associated data from a CSV, then choose whether they'd like to add the classrooms to the existing database or completely overwrite it. (H, M)"];
+    Utility-->Performance-->P1["Booking Response Time"]-->P2["A user selects a room to book at a specified date and time while several other operations are occurring, and the booking process completes in 3 seconds or less. (H, M)"];
+```
 
 ## Milestones & Deliverables
 The user stories captured as Gitlab issues have associated due dates. See the issue descriptions.
