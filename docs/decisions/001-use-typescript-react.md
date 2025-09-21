@@ -8,7 +8,7 @@
 - Allowed options: JavaScript or TypeScript, with either next.js or React.
 - Some team members are familiar with React.
 - React's architecture is component-based, which suits the incremental planning steps for this project.  
-- TypeScript offers improved maintainability through type safety, which reduces runime errors and allows safer refactoring.  
+- TypeScript offers improved maintainability through type safety, which reduces runtime errors and allows safer refactoring.  
 - Next.js offers server-side rendering, which is not a priority for this classroom booking project. The booking tool instead focuses on internal authenticated users.  
 
 **Decision:** 
@@ -22,5 +22,5 @@ Use TypeScript with React for frontend framework.
 - ✅ Pairs well with Vitest, our testing tool of choice.  
 
 - ❌ Steep learning curve for unfamiliar members.
-- ❌ Vast selection of librart components may muddle development options; requires more coordination from the team. 
+- ❌ Vast selection of library components may muddle development options; requires more coordination from the team. 
 - ❌ Does not include built-in routing (requires setup with library components; eg. React Router).

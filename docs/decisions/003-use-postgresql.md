@@ -16,7 +16,7 @@ We will use PostgreSQL as the server-side data store.
 **Consequences:**  
 - ✅ Strong concurrency control, which is critical for bookings.  
 - ✅ Works well with Docker packaging, which this project requires.  
-- ✅ Easy to import the CSV classroom data into schema.  
+- ✅ Easy to import the CSV classroom data into the schema.  
 - ✅ Scales better if the project grows beyond the demo/if more classrooms are added.  
 
 - ❌ Heavier setup than SQLite.  
