@@ -21,12 +21,23 @@ Registrars, who oversee classroom availability and handle schedule integrity, wi
 **6.** Deliver a portable and testable system with thorough documentation.
 
 ## User Stories
+User stories are captured as the following Gitlab issues:
 
-User Story #1: Staff Sign-in.
-    https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/1
+1. https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/1
+
+2. https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/2
+
+3. https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/3
+
+4. https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/4
 
 ## Functional Requirements
+Functional requirements are captured as the following Gitlab issues:  
 
 ## Quality Attribute Requirements
+Quality attribute requirements are captured as the following Gitlab issues:  
+
+They are also presented as the following utility tree:  
 
 ## Milestones & Deliverables
+The user stories captured as Gitlab issues have associated due dates. See the issue descriptions.
