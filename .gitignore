@@ -1,3 +1,11 @@
 # Populate this .gitignore with the 
 # files, folders and subdirectories you want git 
 # to ignore. This should be build output, packages, etc. 
+
+node_modules/
+
+dist/
+
+.env
+
+.DS_Store
