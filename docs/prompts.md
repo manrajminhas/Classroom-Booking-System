@@ -9,3 +9,6 @@ https://chatgpt.com/c/68cf84fe-13a4-8331-822a-df14c13aa9ad
 3. Manraj: Format the following functional requirements in Markdown exactly as written, word-for-word. 
 Don't fix typos, grammar, casing, punctuation, numbers, or id's. 
 Don't add or remove any words, symbols, or examples. 
+
+4. Will S: Using TypeScript and NestJS, how can I define the schema of an entity so that I can eventually use a Postgres database?
+https://chatgpt.com/c/68d35963-5044-8330-b451-0d600c59b8e8
