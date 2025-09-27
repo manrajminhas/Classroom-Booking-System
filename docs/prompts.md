@@ -17,3 +17,5 @@ https://chatgpt.com/c/68d35963-5044-8330-b451-0d600c59b8e8
 https://chatgpt.com/c/68d77d11-92d8-832a-9f4b-8303549bfc06
 
 6. Will S: When implementing the create method in a NestJS controller, how do I pass in the data of the object that I want to create?
+
+7. Will S: How do I use Swagger for TypeScript and Nest documentation?

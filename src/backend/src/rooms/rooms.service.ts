@@ -57,8 +57,10 @@ export class RoomsService {
     /**
      * 
      * @param room - Room object to be deleted
+     * @returns - 1 if a room was deleted, 0 otherwise
      */
-    async delete(room: Room): Promise<void> {
-        await this.roomsRepository.delete(room);
+    async delete(room: Room): Promise<boolean> {
+        const res = await this.roomsRepository.delete(room);
+        return (res.affected ?? 0) > 0; // Check if a room was actually deleted
     }
 }
