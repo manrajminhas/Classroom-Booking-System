@@ -12,3 +12,8 @@ Don't add or remove any words, symbols, or examples.
 
 4. Will S: Using TypeScript and NestJS, how can I define the schema of an entity so that I can eventually use a Postgres database?
 https://chatgpt.com/c/68d35963-5044-8330-b451-0d600c59b8e8
+
+5. Will S: What are some best practices for documentation with TypeScript and NestJS?
+https://chatgpt.com/c/68d77d11-92d8-832a-9f4b-8303549bfc06
+
+6. Will S: When implementing the create method in a NestJS controller, how do I pass in the data of the object that I want to create?
