@@ -1,7 +1,7 @@
 import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException, UnauthorizedException } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { PublicUser, User } from "./users.entity";
-import { ApiOperation, ApiTags, ApiResponse, ApiBody } from "@nestjs/swagger";
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from "@nestjs/swagger";
 
 @ApiTags('users')
 @Controller('users')
@@ -22,9 +22,8 @@ export class UsersController {
     @ApiOperation({ summary: 'Find a user given username' })
     @ApiResponse({ status: 200, description: 'Matching user', type: PublicUser })
     @ApiResponse({ status: 404, description: 'User not found' })
-    async findByUsername(
-        @Param('username') username: string
-    ): Promise<PublicUser | null> {
+    @ApiParam({ name: 'username', description: 'Username of the user to find' })
+    async findByUsername(@Param('username') username: string): Promise<PublicUser | null> {
         const user = await this.usersService.findByUsername(username);
         if (!user) {
             throw new NotFoundException('User not found');
@@ -37,6 +36,7 @@ export class UsersController {
     @ApiOperation({ summary: 'Create a user' })
     @ApiResponse({ status: 201, description: 'The user has been created', type: PublicUser })
     @ApiResponse({ status: 409, description: 'The user already exists' })
+    @ApiBody({ description: 'Fields to input', type: PublicUser })
     async create(@Body() userData: Omit<User, 'userID' | 'passwordHash'> & { password: string }
     ): Promise<PublicUser> {
         try {
@@ -53,6 +53,7 @@ export class UsersController {
     @ApiOperation({ summary: 'Login with a username and password' })
     @ApiResponse({ status: 200, description: 'User authenticated', type: PublicUser })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
+    @ApiBody({ description: 'Fields to input', type: PublicUser })
     async login(@Body() userData: { username: string, password: string }): Promise<PublicUser> {
         const user = await this.usersService.validate(userData.username, userData.password);
         if (!user) {
@@ -66,15 +67,13 @@ export class UsersController {
     @Delete(':userID')
     @ApiOperation({ summary: 'Delete a user given userID' })
     @ApiResponse({ status: 204, description: 'User deleted' })
-    @ApiResponse({ status: 404, description: 'User not found' })    
-    async delete(
-        @Param('userID') userID: string
-    ): Promise<void> {
+    @ApiResponse({ status: 404, description: 'User not found' }) 
+    @ApiParam({ name: 'userID', description: 'ID of the user to delete' })
+    async delete(@Param('userID') userID: string): Promise<void> {
         const user = await this.usersService.findByID(Number(userID));
         if (!user) {
             throw new NotFoundException('User not found');
         }
         await this.usersService.delete(Number(userID));
     }
-
 }

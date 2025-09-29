@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Booking } from 'src/bookings/bookings.entity';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany } from 'typeorm';
 
 @Entity()
 @Unique(['building', 'roomNumber'])
@@ -14,4 +15,7 @@ export class Room {
 
     @Column()
     capacity: number;
+
+    @OneToMany(() => Booking, (booking) => booking.room)
+    bookings: Booking[];
 }
