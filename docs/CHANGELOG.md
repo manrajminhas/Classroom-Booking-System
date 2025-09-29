@@ -18,3 +18,8 @@ This is where you record all of the meetings, add the notes for each meetings.
 - Continue work on PRD and capture user stories, functional requirements, and QA scenarios as Gitlab issues
 - Work on ADR documents
 - Discuss potential milestones and deadlines for user stories
+
+### September 23, 2025
+
+- Discuss distribution of responsibilities for Implementation I phase
+- Begin setting up Docker

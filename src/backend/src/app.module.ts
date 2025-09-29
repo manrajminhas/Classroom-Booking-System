@@ -3,7 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RoomsModule } from './rooms/rooms.module';
+import { BookingsModule } from './bookings/bookings.module';
+import { UsersModule } from './users/users.module';
 import { Room } from './rooms/rooms.entity';
+import { Booking } from './bookings/bookings.entity';
+import { User } from './users/users.entity';
+
 
 @Module({
   imports: [
@@ -14,10 +19,10 @@ import { Room } from './rooms/rooms.entity';
       username: 'admin',
       password: '',
       database: 'room_booking',
-      entities: [Room],
+      entities: [Room, Booking, User],
       synchronize: true
     }),
-    RoomsModule],
+    RoomsModule, BookingsModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -1,11 +1,15 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
+@Unique(['building', 'roomNumber'])
 export class Room {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
+    roomID: number;
+    
+    @Column()
     building: string;
 
-    @PrimaryColumn()
+    @Column()
     roomNumber: string;
 
     @Column()

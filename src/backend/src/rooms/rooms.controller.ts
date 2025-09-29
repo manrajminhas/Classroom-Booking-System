@@ -1,4 +1,4 @@
-import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException } from "@nestjs/common";
+import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException } from "@nestjs/common";
 import { RoomsService } from "./rooms.service";
 import { Room } from "./rooms.entity";
 import { ApiOperation, ApiTags, ApiResponse, ApiBody } from "@nestjs/swagger";
@@ -19,58 +19,76 @@ export class RoomsController {
 
     @Get(':building/:roomNumber')
     @ApiOperation({ summary: 'Find a room given building/room number' })
-    @ApiResponse( { status: 200, description: 'Matching room', type: Room })
-    @ApiResponse( {status: 404, description: 'Room not found' })
-    async findOne(
+    @ApiResponse({ status: 200, description: 'Matching room', type: Room })
+    @ApiResponse({ status: 404, description: 'Room not found' })
+    async findByLocation(
         @Param('building') building: string,
         @Param('roomNumber') roomNumber: string
     ): Promise<Room | null> {
-        const room: Room = { building, roomNumber } as Room;
-        const found = await this.roomsService.findOne(room);
-        if (!found) {
+        const room = await this.roomsService.findByLocation(building, roomNumber);
+        if (!room) {
             throw new NotFoundException('Room not found');
         }
-        return found;
+        return room;
+    }
+
+    @Get('building/:building')
+    @ApiOperation({ summary: 'Find rooms in the given building' })
+    @ApiResponse({ status: 200, description: 'Matching rooms', type: [Room] })
+    async findByBuilding(@Param('building') building: string): Promise<Room[]> {
+        return await this.roomsService.findByBuilding(building);
+    } 
+
+    @Get('capacity/:capacity')
+    @ApiOperation({ summary: 'Find rooms with capacity >= given value' })
+    @ApiResponse({ status: 200, description: 'Matching rooms', type: [Room] })
+    async findByCapacity(@Param('capacity') capacity: string): Promise<Room[]> {
+        return await this.roomsService.findByCapacity(Number(capacity));
     }
 
     @Post()
     @ApiOperation({ summary: 'Create a room' })
     @ApiResponse({ status: 201, description: 'The room has been added', type: Room })
-    create(@Body() room: Room): Promise<Room> {
-        return this.roomsService.create(room);
+    @ApiResponse({ status: 409, description: 'The room already exists' })
+    async create(@Body() room: Omit<Room, 'roomID'>): Promise<Room> {
+        try {
+            return await this.roomsService.create(room);
+        }
+        catch (error) {
+            throw new ConflictException('Room already exists');
+        }
     }
     
     @Put(':building/:roomNumber')
-    @ApiOperation({ summary: 'Update a room given building/room number' })
+    @ApiOperation({ summary: 'Update a room given building and room number' })
     @ApiBody({ description: 'Fields to update', type: Room })
     @ApiResponse({ status: 200, description: 'Room updated', type: Room })
     @ApiResponse({ status: 404, description: 'Room not found' })
     async update(
         @Param('building') building: string,
         @Param('roomNumber') roomNumber: string,
-        @Body() newData: Partial<Room>
+        @Body() newData: Omit<Partial<Room>, 'roomID'>
     ): Promise<Room | null> {
-        const room: Room = { building, roomNumber } as Room;
-        const updated = await this.roomsService.update(room, newData);
-        if (!updated) {
+        const room = await this.roomsService.findByLocation(building, roomNumber);
+        if (!room) {
             throw new NotFoundException('Room not found');
         }
-        return updated;
+        return await this.roomsService.update(room.roomID, newData);
     }
 
     @Delete(':building/:roomNumber')
-    @ApiOperation({ summary: 'Delete a room given building/room number' })
+    @ApiOperation({ summary: 'Delete a room given building and room number' })
     @ApiResponse({ status: 204, description: 'Room deleted' })
     @ApiResponse({ status: 404, description: 'Room not found' })    
     async delete(
         @Param('building') building: string,
         @Param('roomNumber') roomNumber: string
     ): Promise<void> {
-        const room: Room = { building, roomNumber } as Room;
-        const deleted = await this.roomsService.delete(room);
-        if (!deleted) {
+        const room = await this.roomsService.findByLocation(building, roomNumber);
+        if (!room) {
             throw new NotFoundException('Room not found');
         }
+        await this.roomsService.delete(room.roomID);
     }
 
 }

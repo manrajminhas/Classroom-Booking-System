@@ -19,3 +19,7 @@ https://chatgpt.com/c/68d77d11-92d8-832a-9f4b-8303549bfc06
 6. Will S: When implementing the create method in a NestJS controller, how do I pass in the data of the object that I want to create?
 
 7. Will S: How do I use Swagger for TypeScript and Nest documentation?
+
+8. Will S: How can I remove a private attribute, like a password hash, before returning in TypeScript?
+https://gemini.google.com/app/1266002057c3f991
+
