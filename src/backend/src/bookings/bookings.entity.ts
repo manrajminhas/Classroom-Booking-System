@@ -20,4 +20,7 @@ export class Booking {
 
     @Column()
     endTime: Date;
+
+    @Column()
+    attendees: number;
 }

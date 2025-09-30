@@ -1,13 +1,17 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, MoreThan, Repository, Not, Between } from 'typeorm';
 import { Booking } from './bookings.entity';
+import { Room } from 'src/rooms/rooms.entity';
 
 @Injectable()
 export class BookingsService {
     constructor(
         @InjectRepository(Booking)
         private bookingsRepository: Repository<Booking>,
+
+        @InjectRepository(Room)
+        private roomsRepository: Repository<Room>
     ) {}
 
     /**
@@ -17,9 +21,14 @@ export class BookingsService {
      * @param roomID - ID of the room for the booking
      * @param startTime - Start time and date for the booking
      * @param endTime - End time and date for the booking
-     * @returns The newly created booking if successful, conflict exception otherwise
+     * @param attendees - Number of attendees expected
+     * @returns The newly created booking if successful
      */
-    async create(userID: number, roomID: number, startTime: Date, endTime: Date): Promise<Booking> {
+    async create(userID: number, roomID: number, startTime: Date, endTime: Date, attendees: number): Promise<Booking> {
+        if (startTime > endTime) {
+            throw new BadRequestException('Invalid time entered');
+        }
+
         const overlap = await this.bookingsRepository.findOne({
             where: {
                 room: { roomID },
@@ -30,11 +39,23 @@ export class BookingsService {
             throw new ConflictException('Room is already booked for that time');
         }
 
+        const room = await this.roomsRepository.findOneBy({ roomID });
+        if (!room) {
+            throw new NotFoundException('Room not found');
+        }
+        if (attendees > room.capacity) {
+            throw new BadRequestException(`Room capacity is ${room.capacity}. You have ${attendees} attendees.`);
+        }
+        else if (attendees < 1) {
+            throw new BadRequestException('You need at least 1 attendee');
+        }
+
         const booking = this.bookingsRepository.create({
             user: { userID },
             room: { roomID },
             startTime,
-            endTime
+            endTime,
+            attendees
         });
         return this.bookingsRepository.save(booking);
     }
@@ -132,9 +153,16 @@ export class BookingsService {
      * @param newStartTime - New start time for the booking (optional)
      * @param newEndTime - New end time for the booking (optional)
      * @param newRoomID - New room ID for the booking (optional)
-     * @returns The updated booking if successful, conflict exception otherwise
+     * @param newAttendees - New number of attendees for the booking (optional)
+     * @returns The updated booking if successful
      */
-    async update(bookingID: number, newStartTime?: Date, newEndTime?: Date, newRoomID?: number): Promise<Booking> {
+    async update(
+        bookingID: number,
+        newStartTime?: Date,
+        newEndTime?: Date,
+        newRoomID?: number, 
+        newAttendees?: number
+    ): Promise<Booking> {
         const booking = await this.findByID(bookingID);
         if (!booking) {
             throw new NotFoundException('Booking not found');
@@ -144,6 +172,23 @@ export class BookingsService {
         const startTime = newStartTime ?? booking.startTime;
         const endTime = newEndTime ?? booking.endTime;
         const roomID = newRoomID ?? booking.room.roomID;
+        const attendees = newAttendees ?? booking.attendees;
+
+        const room = await this.roomsRepository.findOneBy({ roomID });
+        if (!room) {
+            throw new NotFoundException('Room not found');
+        }
+
+        if (startTime > endTime) {
+            throw new BadRequestException('Invalid time entered');
+        }
+
+        if (attendees < 1) {
+            throw new BadRequestException('You need at least 1 attendee');
+        }
+        else if (attendees > room.capacity) {
+            throw new BadRequestException(`Room capacity is ${room.capacity}. You have ${attendees} attendees.`);
+        }
 
         const overlap = await this.bookingsRepository.findOne({
             where: {
@@ -165,6 +210,10 @@ export class BookingsService {
         if (newRoomID) {
             booking.room = { roomID: newRoomID } as any;
         }
+        if (newAttendees) {
+            booking.attendees = newAttendees;
+        }
+
         return this.bookingsRepository.save(booking);
     }
 
