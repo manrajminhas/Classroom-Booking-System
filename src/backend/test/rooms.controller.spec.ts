@@ -20,8 +20,8 @@ describe('RoomsController', () => {
     beforeEach(async () => {
         service = new RoomsService(null as any); // Passing null because we will mock the methods
         controller = new RoomsController(service);
-        // Override service methods with mocks
-        Object.assign(service, mockRoomsService);
+
+        Object.assign(service, mockRoomsService); // Override service methods with mocks
     });
 
     afterEach(() => {
@@ -80,7 +80,7 @@ describe('RoomsController', () => {
             expect(result).toEqual(rooms);
         });
 
-        it('should return an empty array if no rooms exist', async() => {
+        it('should return an empty array if no rooms exist', async () => {
             mockRoomsService.findAll.mockResolvedValue([]);
             const result = await controller.findAll();
             expect(mockRoomsService.findAll).toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe('RoomsController', () => {
             expect(result).toEqual(updatedRoom);
         });
 
-        it('should throw NotFoundException if room not found', async() => {
+        it('should throw NotFoundException if room not found', async () => {
             mockRoomsService.findByLocation.mockResolvedValue(null);
 
             await expect(controller.update('ECS', '3142', { capacity: 99 })).rejects.toThrow('Room not found');
@@ -181,7 +181,7 @@ describe('RoomsController', () => {
             expect(mockRoomsService.delete).toHaveBeenCalledWith(46);
         });
 
-        it('should throw NotFoundException if room not found', async() => {
+        it('should throw NotFoundException if room not found', async () => {
             mockRoomsService.findByLocation.mockResolvedValue(null);
 
             await expect(controller.delete('COR', '967')).rejects.toThrow('Room not found');

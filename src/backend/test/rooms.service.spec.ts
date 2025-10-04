@@ -16,7 +16,7 @@ describe('RoomsService', () => {
             database: ':memory:',
             synchronize: true,
             dropSchema: true,
-            entities: [User, Room, Booking]
+            entities: [Room, User, Booking]
         });
         await dataSource.initialize();
 
@@ -24,7 +24,7 @@ describe('RoomsService', () => {
     });
 
     afterEach(async () => {
-        await dataSource.destroy();
+        await dataSource.destroy(); // Clean up the DB
     });
 
     it('should be defined', () => {
