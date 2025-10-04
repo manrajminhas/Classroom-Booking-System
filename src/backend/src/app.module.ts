@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { Room } from './rooms/rooms.entity';
 import { Booking } from './bookings/bookings.entity';
 import { User } from './users/users.entity';
+import { LogsModule } from './logs/logs.module';
 
 
 @Module({
@@ -22,7 +23,7 @@ import { User } from './users/users.entity';
       entities: [Room, Booking, User],
       synchronize: true
     }),
-    RoomsModule, BookingsModule, UsersModule],
+    RoomsModule, BookingsModule, UsersModule, LogsModule], 
   controllers: [AppController],
   providers: [AppService],
 })
