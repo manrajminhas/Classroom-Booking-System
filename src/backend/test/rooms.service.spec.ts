@@ -45,23 +45,19 @@ describe('RoomsService', () => {
             const roomData = { building: 'ELW', roomNumber: '220', capacity: 35 };
             await roomsService.create(roomData);
         
-            expect(async () => {
-                await roomsService.create(roomData);
-            }).rejects.toThrow();
+            await expect(roomsService.create(roomData)).rejects.toThrow();
         });
 
         it('should not allow non-positive capacities', async () => {
             const roomData = { building: 'ECS', roomNumber: '101', capacity: 0 };
-            expect(async () => {
-                await roomsService.create(roomData);
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.create(roomData))
+                .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should not allow non-integer capacities', async () => {
             const roomData = { building: 'ECS', roomNumber: '101', capacity: 20.5 };
-            expect(async () => {
-                await roomsService.create(roomData);
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.create(roomData))
+                .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should allow multiple rooms in the same building with different room numbers', async () => {
@@ -92,12 +88,10 @@ describe('RoomsService', () => {
             const roomData1 = { building: '', roomNumber: '101', capacity: 50 };
             const roomData2 = { building: 'ECS', roomNumber: '', capacity: 60 };
             
-            expect(async () => {
-                await roomsService.create(roomData1);
-            }).rejects.toThrow('Building and room number are required');
-            expect(async () => {
-                await roomsService.create(roomData2);
-            }).rejects.toThrow('Building and room number are required');
+            await expect(roomsService.create(roomData1))
+                .rejects.toThrow('Building and room number are required');
+            await expect(roomsService.create(roomData2))
+                .rejects.toThrow('Building and room number are required');
         });
     });
 
@@ -261,19 +255,16 @@ describe('RoomsService', () => {
         });
 
         it('should not accept non-positive capacities', async () => {
-            expect(async () => {
-                await roomsService.findByCapacity(0);
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.findByCapacity(0))
+                .rejects.toThrow('Room capacity must be a positive integer');
             
-            expect(async () => {
-                await roomsService.findByCapacity(-20);
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.findByCapacity(-20))
+                .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should not accept non-integer capacities', async () => {
-            expect(async () => {
-                await roomsService.findByCapacity(235.93);
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.findByCapacity(235.93))
+                .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should handle large numbers of rooms', async () => {
@@ -333,22 +324,19 @@ describe('RoomsService', () => {
             const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
             const room = await roomsService.create(roomData);
 
-            expect(async () => {
-                await roomsService.update(room.roomID, { capacity: 0 });
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.update(room.roomID, { capacity: 0 }))
+                .rejects.toThrow('Room capacity must be a positive integer');
 
-            expect(async () => {
-                await roomsService.update(room.roomID, { capacity: -30 });
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.update(room.roomID, { capacity: -30 }))
+                .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should not update a room to a non-integer capacity', async () => {
             const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
             const room = await roomsService.create(roomData);
 
-            expect(async () => {
-                await roomsService.update(room.roomID, { capacity: 42.1 });
-            }).rejects.toThrow('Room capacity must be a positive integer');
+            await expect(roomsService.update(room.roomID, { capacity: 42.1 }))
+                .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should return null when trying to update a non-existent room', async () => {

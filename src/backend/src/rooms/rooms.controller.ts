@@ -1,4 +1,4 @@
-import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException } from "@nestjs/common";
+import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException, BadRequestException } from "@nestjs/common";
 import { RoomsService } from "./rooms.service";
 import { Room } from "./rooms.entity";
 import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam } from "@nestjs/swagger";
@@ -54,12 +54,16 @@ export class RoomsController {
     @ApiOperation({ summary: 'Create a room' })
     @ApiBody({ description: 'Fields to input', type: Room })
     @ApiResponse({ status: 201, description: 'The room has been added', type: Room })
+    @ApiResponse({ status: 400, description: 'Invalid room data' })
     @ApiResponse({ status: 409, description: 'The room already exists' })
     async create(@Body() room: Omit<Room, 'roomID'>): Promise<Room> {
         try {
             return await this.roomsService.create(room);
         }
         catch (error) {
+            if (error.message.includes('capacity') || error.message.includes('Building and room number')) {
+                throw new BadRequestException(error.message);
+            }
             throw new ConflictException('Room already exists');
         }
     }
