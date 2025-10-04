@@ -16,6 +16,9 @@ export class Room {
     @Column({ type: 'int' })
     capacity: number;
 
+    @Column({ type: 'varchar' })
+    avEquipment: string;
+
     @OneToMany(() => Booking, (booking) => booking.room)
     bookings?: Booking[];
 }

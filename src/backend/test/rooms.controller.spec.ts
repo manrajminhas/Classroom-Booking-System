@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { RoomsController } from 'src/rooms/rooms.controller';
 import { RoomsService } from 'src/rooms/rooms.service';
+import { StringDecoder } from 'string_decoder';
 import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest';
 
 describe('RoomsController', () => {
@@ -35,7 +36,13 @@ describe('RoomsController', () => {
 
     describe('create', () => {
         it('should create and return a room', async () => {
-            const roomData = { building: 'ECS', roomNumber: '150', capacity: 55 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '150',
+                capacity: 55,
+                avEquipment: 'Lecture capture capability; Room speakers; TV displays at each learning pod; Touch panel controls for AV system'
+            };
+
             const createdRoom = { roomID: 1, ...roomData };
             mockRoomsService.create.mockResolvedValue(createdRoom);
             const result = await controller.create(roomData);
@@ -44,24 +51,44 @@ describe('RoomsController', () => {
         });
 
         it('should throw ConflictException if room already exists', async () => {
-            const roomData = { building: 'ECS', roomNumber: '150', capacity: 55 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '150',
+                capacity: 55,
+                avEquipment: 'Lecture capture capability; Room speakers; TV displays at each learning pod; Touch panel controls for AV system'
+            };
+
             mockRoomsService.create.mockRejectedValue(new Error('Room already exists'));
             await expect(controller.create(roomData)).rejects.toThrow('Room already exists');
             expect(mockRoomsService.create).toHaveBeenCalledWith(roomData);
         });
 
         it('should throw BadRequestException if room data is invalid', async () => {
-            const roomData = { building: 'COR', roomNumber: '307', capacity: -10 };
+            const roomData = { building: 'COR',
+                roomNumber: '307',
+                capacity: -10,
+                avEquipment: 'Touch panel controls for AV system'
+            };
             mockRoomsService.create.mockRejectedValue(new Error('Room capacity must be a positive integer'));
             await expect(controller.create(roomData)).rejects.toThrow('Room capacity must be a positive integer');
             expect(mockRoomsService.create).toHaveBeenCalledWith(roomData);
 
-            const roomData2 = { building: '', roomNumber: '101', capacity: 50 };
+            const roomData2 = {
+                building: '',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'TV displays at each learning pod; Touch panel controls for AV system'
+            };
             mockRoomsService.create.mockRejectedValue(new Error('Building and room number are required'));
             await expect(controller.create(roomData2)).rejects.toThrow('Building and room number are required');
             expect(mockRoomsService.create).toHaveBeenCalledWith(roomData2);
 
-            const roomData3 = { building: 'ECS', roomNumber: '', capacity: 60 };
+            const roomData3 = {
+                building: 'ECS',
+                roomNumber: '',
+                capacity: 60,
+                avEquipment: 'Lecture capture capability'
+            };
             mockRoomsService.create.mockRejectedValue(new Error('Building and room number are required'));
             await expect(controller.create(roomData3)).rejects.toThrow('Building and room number are required');
             expect(mockRoomsService.create).toHaveBeenCalledWith(roomData3);
@@ -71,9 +98,10 @@ describe('RoomsController', () => {
     describe('findAll', () => {
         it('should return an array of rooms', async () => {
             const rooms = [
-                { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150 },
-                { roomID: 2, building: 'COR', roomNumber: '307', capacity: 50 },
+                { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150, avEquipment: 'Lecture recording capabilities' },
+                { roomID: 2, building: 'COR', roomNumber: '307', capacity: 50, avEquipment: 'Lecture recording capabilities' }
             ];
+
             mockRoomsService.findAll.mockResolvedValue(rooms);
             const result = await controller.findAll();
             expect(mockRoomsService.findAll).toHaveBeenCalled();
@@ -90,7 +118,14 @@ describe('RoomsController', () => {
 
     describe('findByLocation', () => {
         it('should return a room if found', async () => {
-            const room = { roomID: 1, building: 'HSD', roomNumber: '240', capacity: 175 };
+            const room = {
+                roomID: 1,
+                building: 'HSD',
+                roomNumber: '240',
+                capacity: 175,
+                avEquipment: 'Podium; Lecture recording capabilities'
+            };
+
             mockRoomsService.findByLocation.mockResolvedValue(room);
             const result = await controller.findByLocation('HSD', '240');
             expect(mockRoomsService.findByLocation).toHaveBeenCalledWith('HSD', '240');
@@ -107,8 +142,8 @@ describe('RoomsController', () => {
     describe('findByBuilding', () => {
         it('should return an array of rooms in the building', async () => {
             const rooms = [
-                { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150 },
-                { roomID: 2, building: 'ECS', roomNumber: '256', capacity: 27 }
+                { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150, avEquipment: 'Podium' },
+                { roomID: 2, building: 'ECS', roomNumber: '256', capacity: 27, avEquipment: 'Projector' }
             ];
             mockRoomsService.findByBuilding.mockResolvedValue(rooms);
             const result = await controller.findByBuilding('ECS');
@@ -127,8 +162,8 @@ describe('RoomsController', () => {
     describe('findByCapacity', () => {
         it('should return an array of rooms with capacity >= given value', async () => {
             const rooms = [
-                { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150 },
-                { roomID: 2, building: 'HSD', roomNumber: '240', capacity: 175 }
+                { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150, avEquipment: 'Podium' },
+                { roomID: 2, building: 'HSD', roomNumber: '240', capacity: 175, avEquipment: 'Touch panel controls for AV system' }
             ];
             mockRoomsService.findByCapacity.mockResolvedValue(rooms);
             const result = await controller.findByCapacity('100');
@@ -146,16 +181,16 @@ describe('RoomsController', () => {
 
     describe('update', () => {
         it('should update and return the room', async () => {
-            const room = { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150 };
-            const updatedRoom = { ...room, capacity: 200 };
+            const room = { roomID: 1, building: 'ECS', roomNumber: '123', capacity: 150, avEquipment: 'Podium' };
+            const updatedRoom = { ...room, capacity: 200, avEquipment: 'Podium; Lecture Recording Capabilities' };
 
             mockRoomsService.findByLocation.mockResolvedValue(room);
             mockRoomsService.update.mockResolvedValue(updatedRoom);
 
-            const result = await controller.update('ECS', '123', { capacity: 200 });
+            const result = await controller.update('ECS', '123', { capacity: 200, avEquipment: 'Lecture Recording Capabilities' });
 
             expect(mockRoomsService.findByLocation).toHaveBeenCalledWith('ECS', '123');
-            expect(mockRoomsService.update).toHaveBeenCalledWith(1, { capacity: 200 });
+            expect(mockRoomsService.update).toHaveBeenCalledWith(1, { capacity: 200, avEquipment: 'Lecture Recording Capabilities' });
             expect(result).toEqual(updatedRoom);
         });
 
@@ -171,7 +206,7 @@ describe('RoomsController', () => {
 
     describe('delete', () => {
         it('should successfully delete the room', async () => {
-            const room = { roomID: 46, building: 'ECS', roomNumber: '356', capacity: 32 };
+            const room = { roomID: 46, building: 'ECS', roomNumber: '356', capacity: 32, avEquipment: 'Lecture recording capabilities' };
             mockRoomsService.findByLocation.mockResolvedValue(room);
             mockRoomsService.delete.mockResolvedValue(true);
 

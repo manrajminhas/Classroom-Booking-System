@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
-import { Room } from './rooms.entity';
+import { Room } from './rooms.entity';  
+import { Readable } from 'stream';
+import csv from 'csv-parser';
 
 @Injectable()
 export class RoomsService {
@@ -92,9 +94,13 @@ export class RoomsService {
      * 
      * @param roomID - ID of the room to be updated
      * @param newData - The new information to put in the room object (excluding roomID)
-     * @returns - The updated room if it exists, otherwise null
+     * @returns The updated room if it exists, otherwise null
      */
     async update(roomID: number, newData: Omit<Partial<Room>, 'roomID'>): Promise<Room | null> {
+        if (Object.keys(newData).length == 0) { // Do nothing when no arguments passed in
+            return await this.roomsRepository.findOneBy({ roomID });
+        }
+        
         if (newData.capacity !== undefined) {
             if (newData.capacity <= 0 || !Number.isInteger(newData.capacity)) {
                 throw new Error('Room capacity must be a positive integer');
@@ -110,10 +116,38 @@ export class RoomsService {
      * Deletes a room given room ID.
      * 
      * @param roomID - ID of the room to delete
-     * @returns - true if the room was deleted, false otherwise
+     * @returns true if the room was deleted, false otherwise
      */
     async delete(roomID: number): Promise<boolean> {
         const res = await this.roomsRepository.delete(roomID);
         return (res.affected ?? 0) > 0; // Check if a room was actually deleted
+    }
+
+    /**
+     * Adds rooms to the database given a CSV containing room data.
+     * 
+     * @param file - CSV containing room data 
+     * @returns The newly saved rooms
+     */
+    async addFromCSV(file: Express.Multer.File): Promise<Room[]> {
+        const results: Partial<Room>[] = [];
+        const stream = Readable.from(file.buffer.toString());
+
+        await new Promise<void>((resolve, reject) => {
+            stream.pipe(csv())
+                .on('data', (data) => {
+                    results.push({
+                        roomNumber: data['Room'],
+                        building: data['Building'],
+                        capacity: parseInt(data['Capacity'], 10),
+                        avEquipment: data['AV Equipment']
+                    });
+                })
+                .on('end', () => resolve())
+                .on('error', (err) => reject(err));
+        });
+
+        const saved = await this.roomsRepository.save(results);
+        return saved;
     }
 }

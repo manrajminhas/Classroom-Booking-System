@@ -33,7 +33,12 @@ describe('RoomsService', () => {
 
     describe('create', () => {
         it('should create and return a new room', async () => {
-            const roomData = { building: 'ECS', roomNumber: '123', capacity: 75 };
+            const roomData = { 
+                building: 'ECS',
+                roomNumber: '123',
+                capacity: 75,
+                avEquipment: '1 digital video projector; 1 document camera'
+            };
             const room = await roomsService.create(roomData);
             expect(room).toHaveProperty('roomID');
             expect(room.building).toBe('ECS');
@@ -42,27 +47,55 @@ describe('RoomsService', () => {
         });
 
         it('should not add duplicate rooms', async () => {
-            const roomData = { building: 'ELW', roomNumber: '220', capacity: 35 };
+            const roomData = {
+                building: 'ELW',
+                roomNumber: '220',
+                capacity: 35,
+                avEquipment: 'Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+            };
             await roomsService.create(roomData);
         
+            // Try creating the same room
             await expect(roomsService.create(roomData)).rejects.toThrow();
         });
 
         it('should not allow non-positive capacities', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 0 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 0,
+                avEquipment: '1 digital video projector; A built-in classroom computer with webcam'
+            };
             await expect(roomsService.create(roomData))
                 .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should not allow non-integer capacities', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 20.5 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 20.5,
+                avEquipment: '1 digital video projector; A built-in classroom computer with webcam'
+            };
             await expect(roomsService.create(roomData))
                 .rejects.toThrow('Room capacity must be a positive integer');
         });
 
         it('should allow multiple rooms in the same building with different room numbers', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ECS', roomNumber: '102', capacity: 60 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 60,
+                avEquipment: '1 digital video projector; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio)'
+            };   
+            
+            const roomData2 = {
+                building: 'ECS',
+                roomNumber: '105',
+                capacity: 75,
+                avEquipment: '1 digital video projector; A built-in classroom computer with webcam'
+            };             
+            
             const room1 = await roomsService.create(roomData1);
             const room2 = await roomsService.create(roomData2);
 
@@ -73,8 +106,20 @@ describe('RoomsService', () => {
         });
 
         it('should allow rooms in different buildings with the same room number', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ELW', roomNumber: '101', capacity: 60 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 60,
+                avEquipment: '1 digital video projector; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio)'
+            };   
+            
+            const roomData2 = {
+                building: 'COR',
+                roomNumber: '101',
+                capacity: 35,
+                avEquipment: 'A built-in classroom computer with webcam'
+            };   
+
             const room1 = await roomsService.create(roomData1);
             const room2 = await roomsService.create(roomData2);
 
@@ -85,8 +130,18 @@ describe('RoomsService', () => {
         });
 
         it('should require a building and room number', async () => {
-            const roomData1 = { building: '', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ECS', roomNumber: '', capacity: 60 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '',
+                capacity: 95,
+                avEquipment: '1 digital video projector; A built-in classroom computer with webcam'
+            }
+            const roomData2 = {
+                building: '',
+                roomNumber: '123',
+                capacity: 60,
+                avEquipment: '1 digital video projector; A built-in classroom computer with webcam'            
+            };
             
             await expect(roomsService.create(roomData1))
                 .rejects.toThrow('Building and room number are required');
@@ -97,8 +152,20 @@ describe('RoomsService', () => {
 
     describe('findAll', () => {
         it('should return all rooms (small number)', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ELW', roomNumber: '220', capacity: 35 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'A built-in classroom computer with webcam; Lecture capture capability; Room speakers'
+            };
+
+            const roomData2 = {
+                building: 'ELW',
+                roomNumber: '220',
+                capacity: 35,
+                avEquipment: 'A built-in classroom computer with webcam'
+            };
+
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
             
@@ -108,7 +175,12 @@ describe('RoomsService', () => {
 
         it('should return all rooms (large number)', async () => {
             for (let i = 1; i <= 500; i++) {
-                const roomData = { building: 'COR', roomNumber: `R${i}`, capacity: 90 };
+                const roomData = {
+                    building:'COR',
+                    roomNumber: `R${i}`,
+                    capacity: 90,
+                    avEquipment: 'A built-in classroom computer with webcam'
+                };
                 await roomsService.create(roomData);
             }
             const rooms = await roomsService.findAll();
@@ -118,7 +190,12 @@ describe('RoomsService', () => {
 
     describe('findByLocation', () => {
         it('should find a room by building and room number', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: '2 document cameras; 3 digital video projectors'
+            };
             await roomsService.create(roomData);
 
             const room = await roomsService.findByLocation('ECS', '101');
@@ -134,8 +211,19 @@ describe('RoomsService', () => {
         });
 
         it('should return the correct room when multiple rooms exist', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ECS', roomNumber: '102', capacity: 60 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: '1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability'
+            };
+            const roomData2 = {
+                building: 'ECS',
+                roomNumber: '102',
+                capacity: 60,
+                avEquipment: 'Lecture capture capability'    
+            };
+
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
 
@@ -147,7 +235,12 @@ describe('RoomsService', () => {
         });
 
         it('should return null if building or room number do not match', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: '1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability'
+            };
             await roomsService.create(roomData);
             
             const room1 = await roomsService.findByLocation('ELW', '101');
@@ -157,8 +250,19 @@ describe('RoomsService', () => {
         });
 
         it('should distinguish between rooms with the same number in different buildings', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ELW', roomNumber: '101', capacity: 60 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: '1 digital video projector; Lecture capture capability'
+            };
+            const roomData2 = {
+                building: 'ELW',
+                roomNumber: '101',
+                capacity: 60,
+                avEquipment: '1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability'
+            };
+
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
             
@@ -171,9 +275,15 @@ describe('RoomsService', () => {
 
         it('should handle large numbers of rooms', async () => {
             for (let i = 1; i <= 200; i++) {
-                const roomData = { building: 'COR', roomNumber: `R${i}`, capacity: 58 };
+                const roomData = {
+                    building: 'COR',
+                    roomNumber: `R${i}`,
+                    capacity: 58,
+                    avEquipment: 'Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+                };
                 await roomsService.create(roomData);
             }
+
             const room = await roomsService.findByLocation('COR', 'R150');
             expect(room?.building).toBe('COR');
             expect(room?.roomNumber).toBe('R150');
@@ -182,9 +292,25 @@ describe('RoomsService', () => {
 
     describe('findByBuilding', () => {
         it('should find all rooms in a building', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ECS', roomNumber: '102', capacity: 90 };
-            const roomData3 = { building: 'ELW', roomNumber: '210', capacity: 35 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'A built-in classroom computer with webcam; Lecture capture capability; Podium'
+            };
+            const roomData2 = {
+                building: 'ECS',
+                roomNumber: '102',
+                capacity: 90,
+                avEquipment: 'A built-in classroom computer with webcam; Lecture capture capability; Podium'
+            };
+            const roomData3 = {
+                building: 'ELW',
+                roomNumber: '210',
+                capacity: 35,
+                avEquipment: 'A built-in classroom computer with webcam; Lecture capture capability; Podium'
+            };
+
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
             await roomsService.create(roomData3);
@@ -203,9 +329,25 @@ describe('RoomsService', () => {
         });
 
         it('should return rooms sorted by room number', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '202', capacity: 35 };
-            const roomData2 = { building: 'ECS', roomNumber: '101', capacity: 184 };
-            const roomData3 = { building: 'ECS', roomNumber: '150', capacity: 68 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '202',
+                capacity: 35,
+                avEquipment: 'A built-in classroom computer with webcam; Lecture capture capability; Podium'
+            };
+            const roomData2 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 184,
+                avEquipment: 'A built-in classroom computer with webcam; Podium'
+            };
+            const roomData3 = {
+                building: 'ECS',
+                roomNumber: '150',
+                capacity: 68,
+                avEquipment: 'A built-in classroom computer with webcam; Lecture capture capability; Podium'
+            };
+
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
             await roomsService.create(roomData3);
@@ -219,7 +361,12 @@ describe('RoomsService', () => {
 
         it('should handle large numbers of rooms', async () => {
             for (let i = 1; i <= 300; i++) {
-                const roomData = { building: 'COR', roomNumber: `R${i}`, capacity: 45 };
+                const roomData = {
+                    building: 'COR',
+                    roomNumber: `R${i}`,
+                    capacity: 45,
+                    avEquipment: '1 digital video projector; 1 document camera; A built-in classroom computer with webcam'
+                };
                 await roomsService.create(roomData);
             }
             const rooms = await roomsService.findByBuilding('COR');
@@ -231,9 +378,24 @@ describe('RoomsService', () => {
 
     describe('findByCapacity', () => {
         it('should find all rooms with at least the given capacity', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ECS', roomNumber: '102', capacity: 90 };
-            const roomData3 = { building: 'ELW', roomNumber: '210', capacity: 35 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+            };
+            const roomData2 = {
+                building: 'ECS',
+                roomNumber: '102',
+                capacity: 90,
+                avEquipment: 'Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+            };
+            const roomData3 = {
+                building: 'ELW',
+                roomNumber: '210',
+                capacity: 35,
+                avEquipment: 'Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'            
+            };
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
             await roomsService.create(roomData3);
@@ -245,8 +407,18 @@ describe('RoomsService', () => {
         });
 
         it('should return an empty array if no rooms meet the capacity requirement', async () => {
-            const roomData1 = { building: 'ECS', roomNumber: '101', capacity: 50 };
-            const roomData2 = { building: 'ECS', roomNumber: '102', capacity: 90 };
+            const roomData1 = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Podium; Room speakers'
+            };
+            const roomData2 = {
+                building: 'ECS',
+                roomNumber: '102',
+                capacity: 90,
+                avEquipment: 'Podium; Room speakers'
+            };
             await roomsService.create(roomData1);
             await roomsService.create(roomData2);
             
@@ -269,7 +441,12 @@ describe('RoomsService', () => {
 
         it('should handle large numbers of rooms', async () => {
             for (let i = 1; i <= 400; i++) {
-                const roomData = { building: 'HSD', roomNumber: `A${i}`, capacity: i };
+                const roomData = {
+                    building: 'HSD',
+                    roomNumber: `A${i}`,
+                    capacity: i,
+                    avEquipment: '1 document camera; A built-in classroom computer with webcam'
+                };
                 await roomsService.create(roomData);
             }
             const rooms = await roomsService.findByCapacity(350);
@@ -281,7 +458,12 @@ describe('RoomsService', () => {
 
     describe('findByID', () => {
         it('should find a room by ID', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: '1 document camera; A built-in classroom computer with webcam'
+            };
             const createdRoom = await roomsService.create(roomData);
 
             const room = await roomsService.findByID(createdRoom.roomID);
@@ -298,7 +480,12 @@ describe('RoomsService', () => {
 
         it('should handle large numbers of rooms', async () => {
             for (let i = 1; i <= 750; i++) {
-                const roomData = { building: 'COR', roomNumber: `R${i}`, capacity: 70 };
+                const roomData = {
+                    building: 'COR',
+                    roomNumber: `R${i}`,
+                    capacity: 70,
+                    avEquipment: 'Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+                };
                 await roomsService.create(roomData);
             }
             const foundRoom = await roomsService.findByID(750);
@@ -310,7 +497,12 @@ describe('RoomsService', () => {
 
     describe('update', () => {
         it('should update a room\'s capacity', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+            };
             const room = await roomsService.create(roomData);
 
             const updatedRoom = await roomsService.update(room.roomID, { capacity: 75 });
@@ -318,10 +510,17 @@ describe('RoomsService', () => {
             expect(updatedRoom?.building).toBe('ECS');
             expect(updatedRoom?.roomNumber).toBe('101');
             expect(updatedRoom?.capacity).toBe(75);
+            expect(updatedRoom?.avEquipment).toBe('Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic');
         });
 
         it('should not update a room to a non-positive capacity', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+            };
+
             const room = await roomsService.create(roomData);
 
             await expect(roomsService.update(room.roomID, { capacity: 0 }))
@@ -332,7 +531,12 @@ describe('RoomsService', () => {
         });
 
         it('should not update a room to a non-integer capacity', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Podium; Room speakers; Touch panel controls for AV system'
+            };
             const room = await roomsService.create(roomData);
 
             await expect(roomsService.update(room.roomID, { capacity: 42.1 }))
@@ -343,11 +547,88 @@ describe('RoomsService', () => {
             const updatedRoom = await roomsService.update(9999, { capacity: 80 });
             expect(updatedRoom).toBeNull();
         });
+
+        it('should add to a room\'s AV equipment', async () => {
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Wireless mic'
+            };
+
+            const room = await roomsService.create(roomData);
+
+            const updatedRoom = await roomsService.update(room.roomID, { avEquipment: 'Room speakers; Wireless mic; Podium' });
+            expect(updatedRoom?.roomID).toBe(room.roomID);
+            expect(updatedRoom?.building).toBe('ECS');
+            expect(updatedRoom?.roomNumber).toBe('101');
+            expect(updatedRoom?.capacity).toBe(50);
+            expect(updatedRoom?.avEquipment).toBe('Room speakers; Wireless mic; Podium');
+        });
+
+        it('should remove from a room\'s AV equipment', async () => {
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Wireless mic'
+            };
+
+            const room = await roomsService.create(roomData);
+
+            const updatedRoom = await roomsService.update(room.roomID, { avEquipment: 'Room speakers' });
+            expect(updatedRoom?.roomID).toBe(room.roomID);
+            expect(updatedRoom?.building).toBe('ECS');
+            expect(updatedRoom?.roomNumber).toBe('101');
+            expect(updatedRoom?.capacity).toBe(50);
+            expect(updatedRoom?.avEquipment).toBe('Room speakers');
+        });
+
+        it('should update a room\'s capacity and AV equipment', async () => {
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Projector; Wireless mic'
+            };
+
+            const room = await roomsService.create(roomData);
+
+            const updatedRoom = await roomsService.update(room.roomID, { capacity: 45, avEquipment: 'Room speakers; Projector; Wireless mic; Lecture recording capabilities' });
+            expect(updatedRoom?.roomID).toBe(room.roomID);
+            expect(updatedRoom?.building).toBe('ECS');
+            expect(updatedRoom?.roomNumber).toBe('101');
+            expect(updatedRoom?.capacity).toBe(45);
+            expect(updatedRoom?.avEquipment).toBe('Room speakers; Projector; Wireless mic; Lecture recording capabilities');
+        });
+
+        it('should not make any changes when no arguments passed in', async () => {
+             const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Projector; Wireless mic'
+            };
+
+            const room = await roomsService.create(roomData);
+
+            const updatedRoom = await roomsService.update(room.roomID, { });
+            expect(updatedRoom?.roomID).toBe(room.roomID);
+            expect(updatedRoom?.building).toBe('ECS');
+            expect(updatedRoom?.roomNumber).toBe('101');
+            expect(updatedRoom?.capacity).toBe(50);
+            expect(updatedRoom?.avEquipment).toBe('Room speakers; Projector; Wireless mic');           
+        });
     });
 
     describe('delete', () => {
         it('should delete a room by ID', async () => {
-            const roomData = { building: 'ECS', roomNumber: '101', capacity: 50 };
+            const roomData = {
+                building: 'ECS',
+                roomNumber: '101',
+                capacity: 50,
+                avEquipment: 'Room speakers; Touch panel controls for AV system'
+            };
             const room = await roomsService.create(roomData);
 
             const deleteResult = await roomsService.delete(room.roomID);
@@ -364,7 +645,12 @@ describe('RoomsService', () => {
 
         it('should handle large numbers of rooms', async () => {
             for (let i = 1; i <= 600; i++) {
-                const roomData = { building: 'COR', roomNumber: `R${i}`, capacity: 80 };
+                const roomData = {
+                    building: 'COR',
+                    roomNumber: `R${i}`,
+                    capacity: 80,
+                    avEquipment: 'Podium'
+                };
                 await roomsService.create(roomData);
             }
             const deleteResult = await roomsService.delete(562);
