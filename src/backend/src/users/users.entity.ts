@@ -7,15 +7,16 @@ export class User {
     @PrimaryGeneratedColumn()
     userID: number;
     
-    @Column()
+    @Column({ type: 'varchar' })
     username: string;
 
-    @Column()
+    @Column({ type: 'varchar' })
     passwordHash: string;
 
     @OneToMany(() => Booking, (booking) => booking.user)
     bookings: Booking[];
 }
+
 
 export class PublicUser {
     userID: number;

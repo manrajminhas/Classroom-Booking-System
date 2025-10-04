@@ -15,12 +15,12 @@ export class Booking {
     @JoinColumn({ name: 'roomID' })
     room: Room;
 
-    @Column()
+    @Column({ type: 'datetime' })
     startTime: Date;
 
-    @Column()
+    @Column({ type: 'datetime' })
     endTime: Date;
 
-    @Column()
+    @Column({ type: 'int' })
     attendees: number;
 }

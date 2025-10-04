@@ -1,5 +1,5 @@
 import { Booking } from 'src/bookings/bookings.entity';
-import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany, Check } from 'typeorm';
 
 @Entity()
 @Unique(['building', 'roomNumber'])
@@ -7,15 +7,15 @@ export class Room {
     @PrimaryGeneratedColumn()
     roomID: number;
     
-    @Column()
+    @Column({ type: 'varchar' })
     building: string;
 
-    @Column()
+    @Column({ type: 'varchar' })
     roomNumber: string;
 
-    @Column()
+    @Column({ type: 'int' })
     capacity: number;
 
     @OneToMany(() => Booking, (booking) => booking.room)
-    bookings: Booking[];
+    bookings?: Booking[];
 }

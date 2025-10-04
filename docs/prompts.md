@@ -23,3 +23,6 @@ https://chatgpt.com/c/68d77d11-92d8-832a-9f4b-8303549bfc06
 8. Will S: How can I remove a private attribute, like a password hash, before returning in TypeScript?
 https://gemini.google.com/app/1266002057c3f991
 
+9. Will S: How do I set up Vitest for my TypeScript project?
+https://chatgpt.com/c/68e0654f-56f4-832d-b85f-61f1fa2c2aff
+

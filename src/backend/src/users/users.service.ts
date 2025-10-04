@@ -27,7 +27,7 @@ export class UsersService {
      * @returns The corresponding user if found, otherwise null
      */
     async findByUsername(username: string): Promise<User | null> {
-        return await this.usersRepository.findOneBy( {username} );
+        return await this.usersRepository.findOneBy({ username });
     }
 
     /**
@@ -37,7 +37,7 @@ export class UsersService {
      * @returns The corresponding user if found, otherwise null
      */
     async findByID(userID: number): Promise<User | null> {
-        return await this.usersRepository.findOneBy( {userID} );
+        return await this.usersRepository.findOneBy({ userID });
     }
 
     /**
@@ -48,13 +48,13 @@ export class UsersService {
      * @returns The newly created user object
      */
     async create(username: string, password: string): Promise<User> {
-        const exists = await this.usersRepository.findOneBy( {username} );
+        const exists = await this.usersRepository.findOneBy({ username });
         if (exists) {
             throw new ConflictException('User already exists');
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = this.usersRepository.create( {username, passwordHash });
+        const user = this.usersRepository.create({ username, passwordHash });
         return this.usersRepository.save(user);
     }
 

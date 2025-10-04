@@ -17,8 +17,15 @@ export class RoomsService {
      * @returns The new room entity with all of its fields, including roomID
      */
     async create(roomData: Omit<Room, 'roomID'>): Promise<Room> {
+        if (roomData.capacity <= 0 || !Number.isInteger(roomData.capacity)) {
+            throw new Error('Room capacity must be a positive integer');
+        }
+
+        if (roomData.building == '' || roomData.roomNumber == '') {
+            throw new Error('Building and room number are required');
+        }
         const room = this.roomsRepository.create(roomData);
-        return this.roomsRepository.save(room); // Add room to the DB
+        return await this.roomsRepository.save(room); // Add room to the DB
     } 
 
     /**
@@ -38,7 +45,7 @@ export class RoomsService {
      * @returns The corresponding room if found, otherwise null
      */
     async findByLocation(building: string, roomNumber: string): Promise<Room | null> {
-        return this.roomsRepository.findOneBy( {building, roomNumber} );
+        return this.roomsRepository.findOneBy({ building, roomNumber });
     }
 
     /**
@@ -50,7 +57,7 @@ export class RoomsService {
     async findByBuilding(building: string): Promise<Room[]> {
         return this.roomsRepository.find({
             where: { building: building },
-            order: {roomNumber: 'ASC' }
+            order: { roomNumber: 'ASC' }
         });
     }
 
@@ -74,7 +81,7 @@ export class RoomsService {
      * @returns The corresponding room if found, otherwise null
      */
     async findByID(roomID: number): Promise<Room | null> {
-        return this.roomsRepository.findOneBy( {roomID} );
+        return this.roomsRepository.findOneBy({ roomID });
     }
 
     /**
@@ -86,7 +93,7 @@ export class RoomsService {
      */
     async update(roomID: number, newData: Omit<Partial<Room>, 'roomID'>): Promise<Room | null> {
         await this.roomsRepository.update(roomID, newData);
-        return this.roomsRepository.findOneBy ( {roomID} );
+        return this.roomsRepository.findOneBy ({ roomID });
     }
 
     /**
