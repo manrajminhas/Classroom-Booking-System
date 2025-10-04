@@ -68,6 +68,9 @@ export class RoomsService {
      * @returns An array of matching rooms
      */
     async findByCapacity(capacity: number): Promise<Room[]> {
+        if (capacity <= 0 || !Number.isInteger(capacity)) {
+            throw new Error('Room capacity must be a positive integer');
+        }
         return this.roomsRepository.find({ 
             where: { capacity: MoreThanOrEqual(capacity) },
             order: { capacity: 'ASC' }
@@ -92,7 +95,14 @@ export class RoomsService {
      * @returns - The updated room if it exists, otherwise null
      */
     async update(roomID: number, newData: Omit<Partial<Room>, 'roomID'>): Promise<Room | null> {
+        if (newData.capacity !== undefined) {
+            if (newData.capacity <= 0 || !Number.isInteger(newData.capacity)) {
+                throw new Error('Room capacity must be a positive integer');
+            }
+        }
+        
         await this.roomsRepository.update(roomID, newData);
+
         return this.roomsRepository.findOneBy ({ roomID });
     }
 
@@ -100,7 +110,7 @@ export class RoomsService {
      * Deletes a room given room ID.
      * 
      * @param roomID - ID of the room to delete
-     * @returns - 1 if the room was deleted, 0 otherwise
+     * @returns - true if the room was deleted, false otherwise
      */
     async delete(roomID: number): Promise<boolean> {
         const res = await this.roomsRepository.delete(roomID);
