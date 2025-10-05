@@ -709,4 +709,23 @@ describe('RoomsService', () => {
             expect(saved[2].avEquipment).toContain('camera');
         });
     });
+
+    describe('deleteAll', () => {
+        it('should delete all rooms from the database', async () => {
+            for (let i = 1; i <= 750; i++) {
+                const roomData = {
+                    building: 'COR',
+                    roomNumber: `R${i}`,
+                    capacity: 70,
+                    avEquipment: 'Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+                };
+                await roomsService.create(roomData);
+            }
+
+            expect(await roomsService.findAll()).toHaveLength(750);    
+
+            await roomsService.deleteAll();
+            expect(await roomsService.findAll()).toHaveLength(0);    
+        });
+    });
 });

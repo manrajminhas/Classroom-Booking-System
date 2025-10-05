@@ -16,7 +16,8 @@ describe('RoomsController', () => {
         findByCapacity: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-        addFromCSV: vi.fn()
+        addFromCSV: vi.fn(),
+        deleteAll: vi.fn()
     };
 
     beforeEach(async () => {
@@ -282,4 +283,12 @@ describe('RoomsController', () => {
             expect(mockRoomsService.addFromCSV).toHaveBeenCalledWith(mockFile);
         });
     });
+
+    describe('deleteAll', () => {
+        it('should return \'All rooms deleted successfully\'', async () => {
+            const result = await controller.deleteAll();
+            expect(result).toEqual({ message: 'All rooms deleted successfully' });
+            expect(mockRoomsService.deleteAll).toHaveBeenCalledOnce();
+        });
+    })
 });

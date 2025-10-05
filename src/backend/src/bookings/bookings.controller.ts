@@ -63,4 +63,25 @@ export class BookingsController {
         const userID: number = user.userID;
         return await this.bookingsService.findByUser(userID);
     }
+
+    @Delete()
+    @ApiOperation({ summary: 'Delete all bookings' })
+    @ApiResponse({ status: 200, description: 'All bookings deleted successfully' })
+    async deleteAll(): Promise<{ message: string }> {
+        await this.bookingsService.deleteAll();
+        return { message: 'All bookings deleted successfully' };
+    }
+
+    @Delete(':bookingID')
+    async deleteBooking(@Param('bookingID') bookingID: string): Promise<{ message: string }> {
+        const id = Number(bookingID);
+
+        const deleted = await this.bookingsService.delete(id);
+
+        if (!deleted) {
+            throw new NotFoundException('Booking not found');
+        }
+
+        return { message: 'Booking deleted successfully' };
+    }
 }

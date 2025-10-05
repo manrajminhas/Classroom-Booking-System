@@ -1,16 +1,16 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { LogsService } from './logs.service';
-import { Roles } from '../users/roles.decorator';
-import { RolesGuard } from '../users/roles.guard';
-import { UserRole } from '../users/users.entity';
+//mport { Roles } from '../users/roles.decorator';
+//import { RolesGuard } from '../users/roles.guard';
+//import { UserRole } from '../users/users.entity';
 
 @Controller('logs')
-@UseGuards(RolesGuard)
+//@UseGuards(RolesGuard)
 export class LogsController {
   constructor(private readonly logsService: LogsService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.REGISTRAR)
+  //@Roles(UserRole.ADMIN, UserRole.REGISTRAR)
   async getLogs() {
     return this.logsService.getAllLogs();
   }
