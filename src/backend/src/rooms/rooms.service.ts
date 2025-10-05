@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { Room } from './rooms.entity';  
@@ -71,7 +71,7 @@ export class RoomsService {
      */
     async findByCapacity(capacity: number): Promise<Room[]> {
         if (capacity <= 0 || !Number.isInteger(capacity)) {
-            throw new Error('Room capacity must be a positive integer');
+            throw new BadRequestException('Room capacity must be a positive integer');
         }
         return this.roomsRepository.find({ 
             where: { capacity: MoreThanOrEqual(capacity) },
@@ -103,7 +103,7 @@ export class RoomsService {
         
         if (newData.capacity !== undefined) {
             if (newData.capacity <= 0 || !Number.isInteger(newData.capacity)) {
-                throw new Error('Room capacity must be a positive integer');
+                throw new BadRequestException('Room capacity must be a positive integer');
             }
         }
         

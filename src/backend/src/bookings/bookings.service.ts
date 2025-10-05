@@ -25,7 +25,7 @@ export class BookingsService {
      * @returns The newly created booking if successful
      */
     async create(userID: number, roomID: number, startTime: Date, endTime: Date, attendees: number): Promise<Booking> {
-        if (startTime > endTime) {
+        if (startTime > endTime || startTime.getTime() < Date.now()) {
             throw new BadRequestException('Invalid time entered');
         }
 
@@ -67,7 +67,10 @@ export class BookingsService {
      * @returns - The corresponding booking if found, null otherwise
      */
     async findByID(bookingID: number): Promise<Booking | null> {
-        return await this.bookingsRepository.findOneBy({ bookingID });
+        return await this.bookingsRepository.findOne({
+            where: { bookingID },
+            relations: ['room', 'user']
+        });
     }
 
     /**
@@ -77,7 +80,10 @@ export class BookingsService {
      * @returns List of the user's bookings
      */
     async findByUser(userID: number): Promise<Booking[]> {
-        return await this.bookingsRepository.findBy({ user: { userID } });
+        return await this.bookingsRepository.find({
+            where: { user: { userID } },
+            relations: ['room', 'user']
+        });
     }
 
     /**
@@ -92,7 +98,9 @@ export class BookingsService {
             where: {
                 user: { userID },
                 startTime: MoreThan(now)
-            }});
+            },
+            relations: ['user', 'room']
+        });
     }
 
     /**
@@ -107,7 +115,9 @@ export class BookingsService {
             where: {
                 user: { userID },
                 startTime: LessThan(now)
-            }});
+            },
+            relations: ['user', 'room']
+        });
     }
 
     /**
@@ -117,7 +127,12 @@ export class BookingsService {
      * @returns List of the room's bookings
      */
     async findByRoom(roomID: number): Promise<Booking[]> {
-        return await this.bookingsRepository.findBy({ room: { roomID } });
+        return await this.bookingsRepository.find({
+            where: {
+                room: { roomID }
+            },
+            relations: ['user', 'room']
+        });
     }
 
     /**
@@ -128,12 +143,17 @@ export class BookingsService {
      */
     async findByDate(date: Date): Promise<Booking[]> {
         const start = new Date(date);
-        start.setHours(0, 0, 0, 0);
+        start.setUTCHours(0, 0, 0, 0);
 
         const end = new Date(date);
-        end.setHours(23, 59, 59, 599);
+        end.setUTCHours(23, 59, 59, 999);
 
-        return await this.bookingsRepository.find({ where: { startTime: Between(start, end) } });
+        return await this.bookingsRepository.find({
+            where: {
+                startTime: Between(start, end)
+            },
+            relations: ['user', 'room']
+        });
     }
 
     /**
@@ -144,77 +164,6 @@ export class BookingsService {
 
     async findAll(): Promise<Booking[]> {
         return await this.bookingsRepository.find();
-    }
-
-    /**
-     * Updates the start/end time or room of a booking
-     * 
-     * @param bookingID - ID of the booking to update
-     * @param newStartTime - New start time for the booking (optional)
-     * @param newEndTime - New end time for the booking (optional)
-     * @param newRoomID - New room ID for the booking (optional)
-     * @param newAttendees - New number of attendees for the booking (optional)
-     * @returns The updated booking if successful
-     */
-    async update(
-        bookingID: number,
-        newStartTime?: Date,
-        newEndTime?: Date,
-        newRoomID?: number, 
-        newAttendees?: number
-    ): Promise<Booking> {
-        const booking = await this.findByID(bookingID);
-        if (!booking) {
-            throw new NotFoundException('Booking not found');
-        }
-
-        // Update the fields if they were input
-        const startTime = newStartTime ?? booking.startTime;
-        const endTime = newEndTime ?? booking.endTime;
-        const roomID = newRoomID ?? booking.room.roomID;
-        const attendees = newAttendees ?? booking.attendees;
-
-        const room = await this.roomsRepository.findOneBy({ roomID });
-        if (!room) {
-            throw new NotFoundException('Room not found');
-        }
-
-        if (startTime > endTime) {
-            throw new BadRequestException('Invalid time entered');
-        }
-
-        if (attendees < 1) {
-            throw new BadRequestException('You need at least 1 attendee');
-        }
-        else if (attendees > room.capacity) {
-            throw new BadRequestException(`Room capacity is ${room.capacity}. You have ${attendees} attendees.`);
-        }
-
-        const overlap = await this.bookingsRepository.findOne({
-            where: {
-                room: { roomID },
-                startTime: LessThan(endTime),
-                endTime: MoreThan(startTime),
-                bookingID: Not(bookingID)
-            }});
-        if (overlap) {
-            throw new ConflictException('Room is already booked for that time');
-        }
-
-        if (newStartTime) {
-            booking.startTime = newStartTime;
-        }
-        if (newEndTime) {
-            booking.endTime = newEndTime;
-        }
-        if (newRoomID) {
-            booking.room = { roomID: newRoomID } as any;
-        }
-        if (newAttendees) {
-            booking.attendees = newAttendees;
-        }
-
-        return this.bookingsRepository.save(booking);
     }
 
     /**
