@@ -136,9 +136,14 @@ export class RoomsService {
         await new Promise<void>((resolve, reject) => {
             stream.pipe(csv())
                 .on('data', (data) => {
+                    const roomStr = data['Room'];
+
+                    // Split the field and remove any empty spaces
+                    const roomParts = roomStr.split(' ').filter(Boolean);
+                    
                     results.push({
-                        roomNumber: data['Room'],
-                        building: data['Building'],
+                        building: roomParts[0],
+                        roomNumber: roomParts[1],
                         capacity: parseInt(data['Capacity'], 10),
                         avEquipment: data['AV Equipment']
                     });
