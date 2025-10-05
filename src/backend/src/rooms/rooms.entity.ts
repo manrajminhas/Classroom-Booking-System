@@ -16,7 +16,7 @@ export class Room {
     @Column({ type: 'int' })
     capacity: number;
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'varchar', default: '' })
     avEquipment: string;
 
     @OneToMany(() => Booking, (booking) => booking.room)
