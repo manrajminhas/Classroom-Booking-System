@@ -660,4 +660,53 @@ describe('RoomsService', () => {
             expect(foundRoom).toBeNull();
         }); 
     });
+
+    describe('uploadCSV', () => {
+        it('should accept properly formatted data', async () => {
+            const csvData = `Room,Building,Capacity,AV Equipment,Location,URL
+                ELL 060 – Classroom,Home Rooms,68,"1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Elliot Building,https://www.uvic.ca/search/rooms/pages/ell-061-classroom.php`;
+
+            const mockFile = {
+                buffer: Buffer.from(csvData)
+            } as Express.Multer.File;
+
+            const saved = await roomsService.addFromCSV(mockFile);
+            
+            expect(saved).toHaveLength(1);
+            expect(saved[0].building).toBe('ELL');
+            expect(saved[0].roomNumber).toBe('060');
+            expect(saved[0].capacity).toBe(68);
+            expect(saved[0].avEquipment).toContain('speakers');
+        });
+
+        it('should add multiple rooms', async () => {
+            const csvData = `Room,Building,Capacity,AV Equipment,Location,URL
+                ELL 060 – Classroom,Home Rooms,68,"1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Elliot Building,https://www.uvic.ca/search/rooms/pages/ell-061-classroom.php
+                ELL 160 – Classroom,Home Rooms,48,"1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Elliot Building,https://www.uvic.ca/search/rooms/pages/ell-160-classroom.php
+                ECS 104 – Classroom,Home Rooms,60,"1 document camera; 2 digital video projectors; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Touch panel controls for AV system; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Engineering and Computer Science Building,https://www.uvic.ca/search/rooms/pages/ecs-104-classroom.php`;
+
+            const mockFile = {
+                buffer: Buffer.from(csvData)
+            } as Express.Multer.File;
+
+            const saved = await roomsService.addFromCSV(mockFile);
+            
+            expect(saved).toHaveLength(3);
+
+            expect(saved[0].building).toBe('ELL');
+            expect(saved[0].roomNumber).toBe('060');
+            expect(saved[0].capacity).toBe(68);
+            expect(saved[0].avEquipment).toContain('speakers');
+
+            expect(saved[1].building).toBe('ELL');
+            expect(saved[1].roomNumber).toBe('160');
+            expect(saved[1].capacity).toBe(48);
+            expect(saved[1].avEquipment).toContain('projector');
+
+            expect(saved[2].building).toBe('ECS');
+            expect(saved[2].roomNumber).toBe('104');
+            expect(saved[2].capacity).toBe(60);
+            expect(saved[2].avEquipment).toContain('camera');
+        });
+    });
 });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { Room } from './rooms.entity';  
@@ -71,7 +71,7 @@ export class RoomsService {
      */
     async findByCapacity(capacity: number): Promise<Room[]> {
         if (capacity <= 0 || !Number.isInteger(capacity)) {
-            throw new Error('Room capacity must be a positive integer');
+            throw new BadRequestException('Room capacity must be a positive integer');
         }
         return this.roomsRepository.find({ 
             where: { capacity: MoreThanOrEqual(capacity) },
@@ -103,7 +103,7 @@ export class RoomsService {
         
         if (newData.capacity !== undefined) {
             if (newData.capacity <= 0 || !Number.isInteger(newData.capacity)) {
-                throw new Error('Room capacity must be a positive integer');
+                throw new BadRequestException('Room capacity must be a positive integer');
             }
         }
         
@@ -136,9 +136,14 @@ export class RoomsService {
         await new Promise<void>((resolve, reject) => {
             stream.pipe(csv())
                 .on('data', (data) => {
+                    const roomStr = data['Room'];
+
+                    // Split the field and remove any empty spaces
+                    const roomParts = roomStr.split(' ').filter(Boolean);
+                    
                     results.push({
-                        roomNumber: data['Room'],
-                        building: data['Building'],
+                        building: roomParts[0],
+                        roomNumber: roomParts[1],
                         capacity: parseInt(data['Capacity'], 10),
                         avEquipment: data['AV Equipment']
                     });

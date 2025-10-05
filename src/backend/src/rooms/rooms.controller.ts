@@ -1,7 +1,8 @@
-import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException, BadRequestException } from "@nestjs/common";
+import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException, BadRequestException, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { RoomsService } from "./rooms.service";
 import { Room } from "./rooms.entity";
 import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam } from "@nestjs/swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @ApiTags('rooms')
 @Controller('rooms')
@@ -102,6 +103,25 @@ export class RoomsController {
             throw new NotFoundException('Room not found');
         }
         await this.roomsService.delete(room.roomID);
+    }
+
+    @Post('upload')
+    @ApiOperation({ summary: 'Add rooms from a CSV file' })
+    @ApiResponse({ status: 201, description: 'The rooms have been added' })
+    @ApiResponse({ status: 400, description: 'No file was uploaded' })
+    @ApiResponse({ status: 404, description: 'No rooms to add were found'})
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadCSV(@UploadedFile() file: Express.Multer.File): Promise<Room[]> {
+        if (!file) {
+            throw new BadRequestException('No file uploaded');
+        }
+
+        const saved = await this.roomsService.addFromCSV(file);
+
+        if(!saved || saved.length == 0) {
+            throw new NotFoundException('No rooms were found in the file');
+        }
+        return saved;
     }
 
 }

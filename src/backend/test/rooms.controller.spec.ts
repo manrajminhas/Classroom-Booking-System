@@ -1,7 +1,7 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import 'reflect-metadata';
 import { RoomsController } from 'src/rooms/rooms.controller';
 import { RoomsService } from 'src/rooms/rooms.service';
-import { StringDecoder } from 'string_decoder';
 import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest';
 
 describe('RoomsController', () => {
@@ -15,7 +15,8 @@ describe('RoomsController', () => {
         findByBuilding: vi.fn(),
         findByCapacity: vi.fn(),
         update: vi.fn(),
-        delete: vi.fn()
+        delete: vi.fn(),
+        addFromCSV: vi.fn()
     };
 
     beforeEach(async () => {
@@ -223,6 +224,62 @@ describe('RoomsController', () => {
 
             expect(mockRoomsService.findByLocation).toHaveBeenCalledWith('COR', '967');
             expect(mockRoomsService.update).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('uploadCSV', () => {
+        it('should accept properly formatted files', async () => {
+            const csvData = `Room,Building,Capacity,AV Equipment,Location,URL
+                ELL 060 – Classroom,Home Rooms,68,"1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Elliot Building,https://www.uvic.ca/search/rooms/pages/ell-061-classroom.php
+                ELL 160 – Classroom,Home Rooms,48,"1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Elliot Building,https://www.uvic.ca/search/rooms/pages/ell-160-classroom.php
+                ECS 104 – Classroom,Home Rooms,60,"1 document camera; 2 digital video projectors; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Touch panel controls for AV system; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic",of the Engineering and Computer Science Building,https://www.uvic.ca/search/rooms/pages/ecs-104-classroom.php`;
+
+            const mockFile = {
+                buffer: Buffer.from(csvData)
+            } as Express.Multer.File;
+
+            const rooms = [
+                {
+                    building: 'ELL',
+                    roomNumber: '060',
+                    capacity: 68,
+                    avEquipment: '1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'
+                },
+                {
+                    building: 'ELL',
+                    roomNumber: '160',
+                    capacity: 48,
+                    avEquipment: '1 digital video projector; 1 document camera; A built-in classroom computer with webcam; Lecture capture capability; Room speakers; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic'                 
+                },
+                {
+                    building: 'ECS',
+                    roomNumber: '104',
+                    capacity: 60,
+                    avEquipment: '1 document camera; 2 digital video projectors; A built-in classroom computer with webcam; Lecture capture capability; Podium; Room speakers; Touch panel controls for AV system; Video and audio laptop connectors (HDMI, VGA, 3.5mm audio); Wireless mic' 
+                }
+            ];
+
+            mockRoomsService.addFromCSV.mockResolvedValue(rooms);
+            const result = await controller.uploadCSV(mockFile);
+
+            expect(mockRoomsService.addFromCSV).toHaveBeenCalledWith(mockFile);
+            expect(result).toEqual(rooms);
+        });
+
+        it('should throw BadRequestException if no file given', async () => {
+            await expect(controller.uploadCSV(undefined as any)).rejects.toThrow(BadRequestException);
+        });
+
+        it('should throw NotFoundException if file is empty', async () => {
+            const mockFile = {
+                buffer: Buffer.from('')
+            } as Express.Multer.File;
+
+            mockRoomsService.addFromCSV.mockResolvedValue([]);
+            const result = controller.uploadCSV(mockFile);
+
+            await expect(result).rejects.toThrow(NotFoundException);
+            expect(mockRoomsService.addFromCSV).toHaveBeenCalledWith(mockFile);
         });
     });
 });
