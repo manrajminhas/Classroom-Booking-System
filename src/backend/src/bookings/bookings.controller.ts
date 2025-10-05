@@ -72,43 +72,16 @@ export class BookingsController {
         return { message: 'All bookings deleted successfully' };
     }
 
-    @Delete('bookings/:username/:building/:roomNumber/:startTime')
-    @ApiOperation({ summary: 'Delete a specific booking by username, room, and start time' })
-    @ApiParam({ name: 'username', description: 'Username of the user who owns the booking' })
-    @ApiParam({ name: 'building', description: 'Building of the room booked' })
-    @ApiParam({ name: 'roomNumber', description: 'Room number of the booking' })    
-    @ApiParam({ name: 'startTime', description: 'Start time of the booking' })
-    @ApiResponse({ status: 200, description: 'Booking deleted successfully' })    
-    @ApiResponse({ status: 404, description: 'User, room, or booking not found' })
+    @Delete(':bookingID')
+    async deleteBooking(@Param('bookingID') bookingID: string): Promise<{ message: string }> {
+        const id = Number(bookingID);
 
-    async deleteBooking(
-        @Param('username') username: string,
-        @Param('building') building: string,
-        @Param('roomNumber') roomNumber: string,
-        @Param('startTime') startTime: string
-    ): Promise<{ message: string }> {
-        const user = await this.usersService.findByUsername(username);
-        if (!user) {
-            throw new NotFoundException('User not found');
+        const deleted = await this.bookingsService.delete(id);
+
+        if (!deleted) {
+            throw new NotFoundException('Booking not found');
         }
-
-        const room = await this.roomsService.findByLocation(building, roomNumber);
-        if (!room) {
-            throw new NotFoundException('Room not found');
-        }
-
-        const booking = await this.bookingsService.findOneByUserRoomAndStartTime(
-            user.userID,
-            room.roomID,
-            new Date(startTime)
-        );
-        if (!booking) throw new NotFoundException('Booking not found for this user, room, and time');
-
-        const deleted = await this.bookingsService.delete(booking.bookingID);
-        if (!deleted) throw new NotFoundException('Booking could not be deleted');
 
         return { message: 'Booking deleted successfully' };
     }
-
-
 }

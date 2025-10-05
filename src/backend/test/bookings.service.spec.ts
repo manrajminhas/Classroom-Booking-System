@@ -750,4 +750,41 @@ describe('RoomsService', () => {
             expect(remaining).toHaveLength(2);
         });
     });
+
+    describe('deleteAll', () => {
+        it('should delete all bookings from the database', async () => {
+            const start1 = new Date('2025-03-12T12:00:00');
+            const end1 = new Date('2025-03-12T13:20:00');
+            const start2 = new Date('2025-09-15T13:30:00');
+            const end2 = new Date('2025-09-15T14:20:00');
+            const start3 = new Date('2026-05-12T15:00:00');
+            const end3 = new Date('2026-05-12T18:00:00');          
+
+            const booking1 = await bookingsRepository.save({
+                user,
+                room,
+                startTime: start1,
+                endTime: end1,
+                attendees: 25
+            });
+            const booking2 = await bookingsRepository.save({
+                user,
+                room,
+                startTime: start2,
+                endTime: end2,
+                attendees: 34
+            });
+            const booking3 = await bookingsRepository.save({
+                user,
+                room,
+                startTime: start3,
+                endTime: end3,
+                attendees: 45
+            }); 
+            
+            expect(await bookingsService.findAll()).toHaveLength(3);
+            const result = await bookingsService.deleteAll();
+            expect(await bookingsService.findAll()).toHaveLength(0);
+        });
+    });
 });
