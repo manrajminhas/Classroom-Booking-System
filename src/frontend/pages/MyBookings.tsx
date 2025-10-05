@@ -17,6 +17,11 @@ const MyBookings: React.FC = () => {
                         <th className="table-header">Cancel Booking</th>
                     </tr>
                 </thead>
+                <tbody>
+                    <tr>
+                        <th className="table-body">Test</th>
+                    </tr>
+                </tbody>
             </table>
 
             <h2>Booking History</h2>
