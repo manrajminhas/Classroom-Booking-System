@@ -183,4 +183,23 @@ export class BookingsService {
     async deleteAll(): Promise<void> {
         await this.bookingsRepository.clear();
     }
+
+    /**
+     * Finds a booking for a specific user, room, and start time.
+     * 
+     * @param userID - ID of the user who made the booking
+     * @param roomID - ID of the booked room
+     * @param startTime - Start time of the booking
+     * @returns The matching booking, or null if not found
+     */
+    async findOneByUserRoomAndStartTime(userID: number, roomID: number, startTime: Date): Promise<Booking | null> {
+        return await this.bookingsRepository.findOne({
+            where: {
+                user: { userID },
+                room: { roomID },
+                startTime
+            },
+            relations: ['user', 'room']
+        });
+    }
 }

@@ -123,5 +123,13 @@ export class RoomsController {
         }
         return saved;
     }
+    
+    @Delete()
+    @ApiOperation({ summary: 'Delete all rooms from the database' })
+    @ApiResponse({ status: 200, description: 'All rooms deleted successfully' })
+    async deleteAll(): Promise<{ message: string }>{
+        await this.roomsService.deleteAll();
+        return { message: 'All rooms deleted successfully' };
+    }
 
 }
