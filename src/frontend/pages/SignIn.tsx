@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
 import { signIn, auth, providerMap } from "@/src/backend/src/auth.ts"
-import { AuthError } from "next-auth"
+import MyBookings from "./MyBookings";
+// import { AuthError } from "next-auth"
 
 const SIGNIN_ERROR_URL = "/error"
 
-export default async function SignInPage(props: {
+export default async function SignIn(props: {
     searchParams: { callbackUrl: string | undefined }
 }) {
     return (
@@ -65,3 +66,4 @@ export default async function SignInPage(props: {
         </div>
     )
 }
+
