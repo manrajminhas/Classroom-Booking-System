@@ -176,4 +176,11 @@ export class BookingsService {
         const res = await this.bookingsRepository.delete(bookingID);
         return (res.affected ?? 0) > 0; // Check if a booking was actually deleted
     }
+
+    /**
+     * Deletes all bookings from the database (admin use only).
+     */
+    async deleteAll(): Promise<void> {
+        await this.bookingsRepository.clear();
+    }
 }

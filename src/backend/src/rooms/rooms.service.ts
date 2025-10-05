@@ -155,4 +155,11 @@ export class RoomsService {
         const saved = await this.roomsRepository.save(results);
         return saved;
     }
+
+    /**
+     * Deletes all rooms from the database (admin use only).
+     */
+    async deleteAll() {
+        await this.roomsRepository.clear();
+    }
 }
