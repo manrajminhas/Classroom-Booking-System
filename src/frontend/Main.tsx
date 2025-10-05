@@ -8,7 +8,6 @@ import MyBookings from './pages/MyBookings';
 
 import './styles/Main.css';
 
-
 const Main: React.FC = () => {
     return (
         <Router>
