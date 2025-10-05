@@ -1,10 +1,38 @@
 import React from 'react';
-// import '' //This is where we will import the css page to go along with this page.
+import '../styles/MyBookings.css'
 
 const MyBookings: React.FC = () => {
     return (
         <div>
-            <h1>My Bookings Page</h1>
+            <h2>Upcoming Bookings</h2>
+
+            <table className="Current-bookings-table">
+                <thead>
+                    <tr>
+                        <th className="table-header">Booking ID</th>
+                        <th className="table-header">Classroom ID</th>
+                        <th className="table-header">Classroom Name</th>
+                        <th className="table-header">Start Time/Date</th>
+                        <th className="table-header">End Time/Date</th>
+                        <th className="table-header">Cancel Booking</th>
+                    </tr>
+                </thead>
+            </table>
+
+            <h2>Booking History</h2>
+
+            <table className="Previous-bookings-table">
+                <thead>
+                <tr>
+                    <th className="table-header">Booking ID</th>
+                    <th className="table-header">Classroom ID</th>
+                    <th className="table-header">Classroom Name</th>
+                    <th className="table-header">Start Time/Date</th>
+                    <th className="table-header">End Time/Date</th>
+                </tr>
+                </thead>
+            </table>
+
         </div>
     );
 };

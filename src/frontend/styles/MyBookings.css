@@ -1,0 +1,9 @@
+* {
+    font-family: Calibri, sans-serif, Arial;
+}
+
+.table-header {
+    border: 1px solid #000000;
+    padding: 8px;
+    background: #f2f2f2;
+}

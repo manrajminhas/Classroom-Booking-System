@@ -1,10 +1,11 @@
 import React from 'react';
-// import '' //This is where we will import the css page to go along with this page.
+import '../styles/Dashboard.css'
 
 const Dashboard: React.FC = () => {
     return (
         <div>
-            <h1>Dashboard page</h1>
+            <h2>Registrar Statistics</h2>
+            <h2>Registrar Logs</h2>
         </div>
     );
 };
