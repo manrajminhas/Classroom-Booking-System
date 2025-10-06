@@ -15,10 +15,10 @@ export class Booking {
     @JoinColumn({ name: 'roomID' })
     room: Room;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz' })
     startTime: Date;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz' })
     endTime: Date;
 
     @Column({ type: 'int' })
