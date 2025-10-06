@@ -10,7 +10,7 @@ services:
       - ./frontend:/frontend
       - /frontend/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=tru
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
     networks:
