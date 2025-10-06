@@ -9,19 +9,21 @@ import { Room } from './rooms/rooms.entity';
 import { Booking } from './bookings/bookings.entity';
 import { User } from './users/users.entity';
 import { LogsModule } from './logs/logs.module';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'admin',
-      password: '',
-      database: 'room_booking',
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
       entities: [Room, Booking, User],
-      synchronize: true
+      synchronize: true,
     }),
     RoomsModule, BookingsModule, UsersModule, LogsModule], 
   controllers: [AppController],
