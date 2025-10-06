@@ -6,6 +6,7 @@ import { Room } from 'src/rooms/rooms.entity';
 
 @Injectable()
 export class BookingsService {
+
     constructor(
         @InjectRepository(Booking)
         private bookingsRepository: Repository<Booking>,
