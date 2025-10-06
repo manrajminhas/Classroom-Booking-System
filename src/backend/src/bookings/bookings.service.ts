@@ -171,7 +171,7 @@ export class BookingsService {
      * Deletes a booking from the database.
      * 
      * @param bookingID - ID of the booking to delete 
-     * @returns - 1 if the booking was deleted, 0 otherwise
+     * @returns - true if the booking was deleted, false otherwise
      */
     async delete(bookingID: number): Promise<boolean> {
         const res = await this.bookingsRepository.delete(bookingID);
