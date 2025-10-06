@@ -28,3 +28,9 @@ https://chatgpt.com/c/68e0654f-56f4-832d-b85f-61f1fa2c2aff
 
 10. Will S: For reading in data from a CSV in NestJS, would that be done in a controller or service?
 https://chatgpt.com/c/68e18220-30cc-832d-a627-33177ed55ef1
+
+11. Max: I need a deeper explanation on how NestJS controllers interact with services.
+
+12. Can you explain Guards as possible route for implementing role based access?
+
+13. Do I need a global variable to be read in a Docker container? How do environment variables work inside Docker?
