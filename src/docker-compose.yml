@@ -1,47 +1,43 @@
 version: '3.8'
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:5173"
-    volumes:
-      - ./frontend:/frontend
-      - /frontend/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    depends_on:
-      - backend
-    networks:
-      - app-network
-
   backend:
-    build:
-      context: ./backend
+    build: ./backend
+    container_name: backend
     ports:
-      - "3001:3000"
+      - '3001:3001'
     volumes:
       - ./backend:/app
       - /app/node_modules
-    networks:
-      - app-network
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - backend
 
   db:
-    image: postgres:15
+    image: postgres:15-alpine
+    container_name: db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydb
     ports:
-      - "5432:5432"
-    networks:
-      - app-network
+      - '5432:5432'
     volumes:
-      - db_data:/var/lib/postgresql/data
-
-networks:
-  app-network:
+      - db-data:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  db-data:
