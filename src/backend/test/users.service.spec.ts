@@ -118,6 +118,9 @@ describe('UsersService', () => {
 
             const result = await usersService.validate('123', 'abc');
             expect(result).toBeNull();
-        })
+        });
+    });
+
+    describe('delete', () => {
     });
 });
