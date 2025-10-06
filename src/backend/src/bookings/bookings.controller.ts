@@ -92,7 +92,6 @@ export class BookingsController {
     @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
     @ApiParam({ name: 'date', description: 'ISO date (YYYY-MM-DD)' })
     async findByDate(@Param('date') dateStr: string): Promise<Booking[]> {
-        // Accept YYYY-MM-DD or full ISO; normalize to Date
         const d = new Date(dateStr);
         if (Number.isNaN(d.getTime())) {
         throw new BadRequestException('Invalid date. Use YYYY-MM-DD or ISO string.');
@@ -105,7 +104,6 @@ export class BookingsController {
     @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
     @ApiParam({ name: 'roomID', description: 'Room ID' })
     async findByRoom(@Param('roomID', ParseIntPipe) roomID: number): Promise<Booking[]> {
-        // Optional: validate room exists
         const room = await this.roomsService.findByID(roomID);
         if (!room) {
         throw new NotFoundException('Room not found');
