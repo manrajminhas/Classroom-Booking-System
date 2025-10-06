@@ -4,6 +4,8 @@ import { Booking } from "./bookings.entity";
 import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam } from "@nestjs/swagger";
 import { UsersService } from "src/users/users.service";
 import { RoomsService } from "src/rooms/rooms.service";
+import { BadRequestException } from "@nestjs/common";
+import { ParseIntPipe } from "@nestjs/common";
 
 @ApiTags('bookings')
 @Controller('bookings')
@@ -84,4 +86,54 @@ export class BookingsController {
 
         return { message: 'Booking deleted successfully' };
     }
+
+    @Get('date/:date')
+    @ApiOperation({ summary: 'Find all bookings on a given date (UTC day)' })
+    @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
+    @ApiParam({ name: 'date', description: 'ISO date (YYYY-MM-DD)' })
+    async findByDate(@Param('date') dateStr: string): Promise<Booking[]> {
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) {
+        throw new BadRequestException('Invalid date. Use YYYY-MM-DD or ISO string.');
+        }
+        return this.bookingsService.findByDate(d);
+    }
+
+    @Get('room/:roomID')
+    @ApiOperation({ summary: 'Find all bookings for a specific room' })
+    @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
+    @ApiParam({ name: 'roomID', description: 'Room ID' })
+    async findByRoom(@Param('roomID', ParseIntPipe) roomID: number): Promise<Booking[]> {
+        const room = await this.roomsService.findByID(roomID);
+        if (!room) {
+        throw new NotFoundException('Room not found');
+        }
+        return this.bookingsService.findByRoom(roomID);
+    }
+
+    @Get('user/:username/past')
+    @ApiOperation({ summary: "Find a user's past bookings" })
+    @ApiResponse({ status: 200, description: 'List of past bookings', type: [Booking] })
+    @ApiParam({ name: 'username', description: 'Username' })
+    async findPastForUser(@Param('username') username: string): Promise<Booking[]> {
+        const user = await this.usersService.findByUsername(username);
+        if (!user) {
+        throw new NotFoundException('User not found');
+        }
+        return this.bookingsService.findPastForUser(user.userID);
+    }
+
+    @Get('user/:username/future')
+        @ApiOperation({ summary: "Find a user's future bookings" })
+        @ApiResponse({ status: 200, description: 'List of future bookings', type: [Booking] })
+        @ApiParam({ name: 'username', description: 'Username' })
+        async findFutureForUser(@Param('username') username: string): Promise<Booking[]> {
+            const user = await this.usersService.findByUsername(username);
+            if (!user) {
+            throw new NotFoundException('User not found');
+            }
+            return this.bookingsService.findFutureForUser(user.userID);
+        }
+
+
 }
