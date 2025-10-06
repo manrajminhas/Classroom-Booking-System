@@ -23,7 +23,7 @@ const ClassRoomSearchPage: React.FC = () => {
             });
             setResults(response.data);
         } catch (error) {
-            console.error('Search failed:', error);
+            console.error('Unsuccessful Search:', error);
         } finally {
             setLoading(false);
         }
@@ -33,18 +33,9 @@ const ClassRoomSearchPage: React.FC = () => {
         <div className="Search-group">
             <h2>Book a Room</h2><br /><br />
 
-            <input
-                className="Search-bar"
-                type="text"
-                id="SearchBar"
-                placeholder="Search a room"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-            />
+            <input className="Search-bar" type="text" id="SearchBar" placeholder="Search a room" value={query} onChange={(e) => setQuery(e.target.value)}/>
 
-            <button className="Search-button" onClick={handleSearch}>
-                Search
-            </button>
+            <button className="Search-button" onClick={handleSearch}>Search</button>
 
             {loading && <p>Loading...</p>}
 
