@@ -6,6 +6,7 @@ import { UsersService } from "src/users/users.service";
 import { RoomsService } from "src/rooms/rooms.service";
 import { BadRequestException } from "@nestjs/common";
 import { ParseIntPipe } from "@nestjs/common";
+import { LogsService } from "src/logs/logs.service";
 
 @ApiTags('bookings')
 @Controller('bookings')
@@ -13,7 +14,8 @@ export class BookingsController {
     constructor(
         private bookingsService: BookingsService,
         private usersService: UsersService,
-        private roomsService: RoomsService
+        private roomsService: RoomsService,
+        private logsService: LogsService
     ) {}
 
     @Get()
@@ -43,13 +45,33 @@ export class BookingsController {
         if (!room) {
             throw new NotFoundException('Room not found');
         }
-        return this.bookingsService.create(
+        const created = await this.bookingsService.create(
             userID,
             room.roomID,
             new Date(startTime),
             new Date(endTime),
             Number(attendees)
         );
+
+        // ADDED: audit logging (fire-and-forget)
+        this.logsService.logAudit({
+            actorId: userID,
+            actorName: 'system',
+            action: 'booking.create',
+            targetType: 'booking',
+            targetId: String(created.bookingID),
+            before: {},
+            after: {
+                bookingID: created.bookingID,
+                roomID: created.room.roomID,
+                startTime: created.startTime,
+                endTime: created.endTime,
+                attendees: created.attendees,
+            },
+            details: `Created booking for ${building} ${roomNumber}`,
+        });
+
+        return created;
     }
 
     @Get('bookings/:username')
@@ -71,6 +93,19 @@ export class BookingsController {
     @ApiResponse({ status: 200, description: 'All bookings deleted successfully' })
     async deleteAll(): Promise<{ message: string }> {
         await this.bookingsService.deleteAll();
+
+        // ADDED: audit logging
+        this.logsService.logAudit({
+            actorId: 1,
+            actorName: 'system',
+            action: 'booking.deleteAll',
+            targetType: 'booking',
+            targetId: 'all',
+            before: {},
+            after: {},
+            details: 'Deleted all bookings',
+        });
+
         return { message: 'All bookings deleted successfully' };
     }
 
@@ -83,6 +118,18 @@ export class BookingsController {
         if (!deleted) {
             throw new NotFoundException('Booking not found');
         }
+
+        // ADDED: audit logging
+        this.logsService.logAudit({
+            actorId: 1,
+            actorName: 'system',
+            action: 'booking.delete',
+            targetType: 'booking',
+            targetId: String(id),
+            before: {},
+            after: {},
+            details: `Deleted booking ${id}`,
+        });
 
         return { message: 'Booking deleted successfully' };
     }

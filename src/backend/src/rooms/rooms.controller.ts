@@ -3,12 +3,14 @@ import { RoomsService } from "./rooms.service";
 import { Room } from "./rooms.entity";
 import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam } from "@nestjs/swagger";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { LogsService } from "src/logs/logs.service";
 
 @ApiTags('rooms')
 @Controller('rooms')
 export class RoomsController {
     constructor(
         private roomsService: RoomsService,
+        private logsService: LogsService,
     ) {}
 
     @Get()
@@ -59,10 +61,28 @@ export class RoomsController {
     @ApiResponse({ status: 409, description: 'The room already exists' })
     async create(@Body() room: Omit<Room, 'roomID'>): Promise<Room> {
         try {
-            return await this.roomsService.create(room);
+            const created = await this.roomsService.create(room);
+
+            await this.logsService.logAudit({
+                actorId: 1,
+                actorName: 'system',
+                action: 'room.create',
+                targetType: 'room',
+                targetId: String(created.roomID),
+                after: {
+                    roomID: created.roomID,
+                    building: created.building,
+                    roomNumber: created.roomNumber,
+                    capacity: created.capacity,
+                    avEquipment: created.avEquipment,
+                },
+                details: `Created room ${created.building} ${created.roomNumber}`,
+            });
+
+            return created;
         }
-        catch (error) {
-            if (error.message.includes('capacity') || error.message.includes('Building and room number')) {
+        catch (error: any) {
+            if (error.message?.includes('capacity') || error.message?.includes('Building and room number')) {
                 throw new BadRequestException(error.message);
             }
             throw new ConflictException('Room already exists');
@@ -81,11 +101,39 @@ export class RoomsController {
         @Param('roomNumber') roomNumber: string,
         @Body() newData: Omit<Partial<Room>, 'roomID'>
     ): Promise<Room | null> {
-        const room = await this.roomsService.findByLocation(building, roomNumber);
-        if (!room) {
+        const before = await this.roomsService.findByLocation(building, roomNumber);
+        if (!before) {
             throw new NotFoundException('Room not found');
         }
-        return await this.roomsService.update(room.roomID, newData);
+
+        const updated = await this.roomsService.update(before.roomID, newData);
+
+        if (updated) {
+            await this.logsService.logAudit({
+                actorId: 1,
+                actorName: 'system',
+                action: 'room.update',
+                targetType: 'room',
+                targetId: String(before.roomID),
+                before: {
+                    roomID: before.roomID,
+                    building: before.building,
+                    roomNumber: before.roomNumber,
+                    capacity: before.capacity,
+                    avEquipment: before.avEquipment,
+                },
+                after: {
+                    roomID: updated.roomID,
+                    building: updated.building,
+                    roomNumber: updated.roomNumber,
+                    capacity: updated.capacity,
+                    avEquipment: updated.avEquipment,
+                },
+                details: `Updated room ${building} ${roomNumber}`,
+            });
+        }
+
+        return updated;
     }
 
     @Delete(':building/:roomNumber')
@@ -98,11 +146,27 @@ export class RoomsController {
         @Param('building') building: string,
         @Param('roomNumber') roomNumber: string
     ): Promise<void> {
-        const room = await this.roomsService.findByLocation(building, roomNumber);
-        if (!room) {
+        const before = await this.roomsService.findByLocation(building, roomNumber);
+        if (!before) {
             throw new NotFoundException('Room not found');
         }
-        await this.roomsService.delete(room.roomID);
+        await this.roomsService.delete(before.roomID);
+
+        await this.logsService.logAudit({
+            actorId: 1,
+            actorName: 'system',
+            action: 'room.delete',
+            targetType: 'room',
+            targetId: String(before.roomID),
+            before: {
+                roomID: before.roomID,
+                building: before.building,
+                roomNumber: before.roomNumber,
+                capacity: before.capacity,
+                avEquipment: before.avEquipment,
+            },
+            details: `Deleted room ${building} ${roomNumber}`,
+        });
     }
 
     @Post('upload')
@@ -121,6 +185,17 @@ export class RoomsController {
         if(!saved || saved.length == 0) {
             throw new NotFoundException('No rooms were found in the file');
         }
+
+        await this.logsService.logAudit({
+            actorId: 1,
+            actorName: 'system',
+            action: 'room.importCsv',
+            targetType: 'room',
+            targetId: 'bulk',
+            after: { count: saved.length },
+            details: `Imported ${saved.length} rooms from CSV`,
+        });
+
         return saved;
     }
     
@@ -129,6 +204,16 @@ export class RoomsController {
     @ApiResponse({ status: 200, description: 'All rooms deleted successfully' })
     async deleteAll(): Promise<{ message: string }>{
         await this.roomsService.deleteAll();
+
+        await this.logsService.logAudit({
+            actorId: 1,
+            actorName: 'system',
+            action: 'room.deleteAll',
+            targetType: 'room',
+            targetId: 'all',
+            details: 'Deleted all rooms',
+        });
+
         return { message: 'All rooms deleted successfully' };
     }
 
