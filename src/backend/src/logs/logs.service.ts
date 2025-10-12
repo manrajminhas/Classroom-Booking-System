@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, FindOptionsWhere } from 'typeorm';
 import { Log } from './logs.entity';
 
+
 type CreateLogInput = {
   userId: number;
   action: string;
@@ -13,6 +14,18 @@ type CreateLogInput = {
   after: Record<string, any> | null;
   reason: string | null;
   details: string | null;
+};
+
+export type AuditInput = {
+  actorId: number;
+  actorName: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  before?: Record<string, any> | null;
+  after?: Record<string, any> | null;
+  reason?: string | null;
+  details?: string | null;
 };
 
 @Injectable()
@@ -39,6 +52,20 @@ export class LogsService {
 
   async getAllLogs(): Promise<Log[]> {
     return this.logRepository.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async logAudit(input: AuditInput): Promise<Log> {
+    return this.createLog({
+      userId: input.actorId,
+      action: input.action,
+      actorUsername: input.actorName,
+      targetType: input.targetType,
+      targetId: input.targetId,
+      before: input.before ?? null,
+      after: input.after ?? null,
+      reason: input.reason ?? null,
+      details: input.details ?? null,
+    });
   }
 
   async getLogsFiltered(params: {
