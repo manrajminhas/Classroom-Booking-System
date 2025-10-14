@@ -2,7 +2,7 @@
 
 | V#   | Name     |
 | ---- | -------- |
-| V00975012 | Will Calder |
+| ~~V00975012~~ | ~~Will Calder~~ |
 | V00998047 | Manraj Minhas |
 | V00989485 | Max Patchell |
 | V01012421 | William Shaw |
