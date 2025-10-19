@@ -19,8 +19,8 @@
 
 
 **Quantitative Implications:**  
-- Estimated ~30–50% fewer runtime errors during development due to static typing.    
-- Typical bundle size with React and Vite is ~250 KB (within acceptable performance thresholds).  
+- Estimated 30–50% fewer runtime errors during development due to static typing.    
+- Typical bundle size with React and Vite is <300 KB (within acceptable performance thresholds).  
 - Strong typing reduces the likelihood of regression errors, lowering maintenance effort in future iterations.
 
 **Decision:** 
@@ -44,4 +44,4 @@ Use TypeScript with React for frontend framework.
 **Reflection:**  
 - The trade-off favors maintainability and developer productivity over initial simplicity.  
 - The initial lack of a clear component hierarchy slowed early development and highlighted the importance of planning structure before implementation.  
-- Future iterations may focus on improving internal structure (routing, state management, component hierarchy) within the existing React + Docker setup, rather than introducing additional frameworks.
+- Future iterations may focus on improving internal structure (routing, state management, component hierarchy) within the existing React and Docker setup, rather than introducing additional frameworks.

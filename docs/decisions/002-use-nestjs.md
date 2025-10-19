@@ -13,6 +13,11 @@
 - Maintaining TypeScript consistency across frontend and backend reduces context switching, simplifies collaboration, and lowers cognitive overhead for developers.  
 - The project benefits from NestJS’s opinionated structure, which fits the incremental and modular development process. 
 
+**Alternatives Considered:**  
+- **Express.js:** Faster to set up, more flexibility, but lacks built-in modular structure, validation, and testing support. Would require additional libraries for basic features.  
+- **Django (Python):** Mature framework but requires using a second language, which increases complexity and inconsistency with the frontend stack.  
+- **Spring Boot (Java):** Powerful but too much for the project scope and introduces additional tooling and learning curve.
+
 **Quantitative Implications:**  
 - Expected 20–30% reduction in setup and configuration time compared to Express due to NestJS’s built-in module system, validation, and dependency injection.  
 - Reduced boilerplate code for routing and validation by an estimated 25–40% compared to Express.  
