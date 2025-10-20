@@ -47,4 +47,4 @@ We will use NestJS and TypeScript for the entry layer and backend framework.
 
 **Related User Stories**
 - [User Story 1: Staff can sign-in](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/1)
-- [User Story 10: Registrar can manage schedule integrity](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/10)
+- [User Story 10: Registrar can manage schedule integrity](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/24)
