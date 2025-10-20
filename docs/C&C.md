@@ -2,7 +2,7 @@
 
 ### 1. Primary Diagram
 
-![UML Component Diagram - CQC View](Screenshot_2025-10-19_at_10.04.39_PM.png)
+![UML Component Diagram - CQC View](C&C.png)
 
 ---
 
@@ -22,17 +22,13 @@
 
 ### 3. Interface Descriptions
 
-| **Interface**                        | **From → To**               | **Type**                  | **Description**                                                                 |
-|---------------------------------------|-----------------------------|----------------------------|----------------------------------------------------------------------------------|
-| UI Interaction	                          | User → Browser                    | Events	                  | The user provides input via onClick, onChange, etc. events. The React app listens for these events to update its state or trigger API calls.
-|
-| Internal State Access	                              | Browser → Client-Side State	| Function Calls	              | The React components read from and write to their internal state/context to get authentication tokens or display data to the user.
-|
-| REST API	                    | Browser → Web Server	      | HTTP / JSON	           | The primary connector. The React app sends asynchronous HTTP requests (e.g., POST /bookings) with a JSON payload to the API Endpoints.
-|
-| Controller-Service Call	                        | Web Server → Business Logic	 | Internal Function Call	| Within the NestJS process, the controller (e.g., bookings.controller.ts) calls a function on its injected service (e.g., bookings.service.ts) to execute the business logic.
-|
-| SQL Interface	                       | Business Logic → Database Server	         | SQL (via TCP/IP)	            | The service (via the ORM) sends SQL commands (e.g., SELECT for conflict checking, INSERT to save) over a TCP connection to the database.
+| Interface (Connector) | From &rarr; To | Type | Description |
+| :--- | :--- | :--- | :--- |
+| **UI Interaction** | User &rarr; Browser | Events | The user provides input via `onClick`, `onChange`, etc. events. The React app listens for these events to update its state or trigger API calls. |
+| **Internal State Access** | Browser &rarr; Client-Side State | Function Calls | The React components read from and write to their internal state/context to get authentication tokens or display data to the user. |
+| **REST API** | Browser &rarr; Web Server | HTTP / JSON | The primary connector. The React app sends asynchronous HTTP requests (e.g., `POST /bookings`) with a JSON payload to the API Endpoints. |
+| **Controller-Service Call** | Web Server &rarr; Business Logic | Internal Function Call | Within the NestJS process, the `controller` (e.g., `bookings.controller.ts`) calls a function on its injected `service` (e.g., `bookings.service.ts`) to execute the business logic. |
+| **SQL Interface** | Business Logic &rarr; Database Server | SQL (via TCP/IP) | The `service` (via the ORM) sends SQL commands (e.g., `SELECT` for conflict checking, `INSERT` to save) over a TCP connection to the database. |
 
 
 
