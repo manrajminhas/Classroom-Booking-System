@@ -13,9 +13,8 @@
 | **Frontend (React)**       | Presentation layer containing UI pages and components. Handles user interactions and sends API requests to the backend. |
 | **Backend (NestJS)**       | Application layer that processes incoming requests, applies business logic, and interacts with the database. |
 | **Controllers**            | Handle API requests from the frontend and map them to corresponding service functions.                 |
-| **Services**               | Contain core business logic, validation, and coordination between controllers and data entities.       |
-| **Entities**               | Define the data models and interact with the database through the ORM.                                 |
-| **Core / Bootstrap**       | Initializes and configures the application (e.g., `app.module.ts`, `main.ts`).                         |
+| **Services**               | Contains core business logic, validation, and coordination between controllers and data entities.       |
+| **Entities**               | Defines the data models and interact with the database through the ORM.                                 |
 | **PostgreSQL Database**    | Relational data storage layer. Stores persistent data for bookings, rooms, users, and logs.            |
 
 ---
@@ -34,11 +33,11 @@
 
 ### 4. Rationale
 
-> The system uses a **layered architecture** to separate concerns and improve maintainability.  
-> 
-> - The **presentation layer** is built with React to provide a responsive and modular user interface.  
-> - The **application layer** (NestJS) is structured around controllers, services, and entities to support clean separation between API handling, business logic, and data access.  
-> - The **data layer** uses PostgreSQL to ensure reliable and scalable persistence.  
+The system uses a **layered architecture** to separate concerns and improve maintainability.  
+
+- The **presentation layer** is built with React to provide a responsive and modular user interface.  
+- The **application layer** (NestJS) is structured around controllers, services, and entities to support clean separation between API handling, business logic, and data access.  
+- The **data layer** uses PostgreSQL to ensure reliable and scalable persistence.  
 
 ---
 
