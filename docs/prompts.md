@@ -38,3 +38,5 @@ https://chatgpt.com/c/68e18220-30cc-832d-a627-33177ed55ef1
 14. Will C: How to set up the file hierarachy fir react + typescript frontend. https://chatgpt.com/share/68e32a0b-a160-8003-b2b4-c41939d3e1b8
 
 15. Will C: How do you link a css file to a tsx file. https://chatgpt.com/share/68e32a3a-3564-8003-a01e-b161ec6f8350
+
+16. Max: Create a skeleton table format in markdown for an elemental catalog.
