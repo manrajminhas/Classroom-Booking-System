@@ -232,3 +232,146 @@ We can insert audit records into the Postgres database. We can then assert that 
 **Test 2 - Integration test:**
 
 We can assert that calling systemHealth() returns the expected data regarding the system.
+
+## Quality Attribute Tests
+
+### https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/48
+
+**Visual testing**  
+- Are all of the UI elements in the correct place on the screen?
+- Are there any text/icon cut offs, across different screen resolutions?
+- Do the UI elements have a helpful text or image description? (e.g. button to book a room says "Book Room" instead of "OK")
+- Are elements placed according to industry standards? (e.g. menu bar is at the top of the screen) 
+
+**End-to-end testing** 
+- How easy is it to reserve a classroom? Log in with a new account, track how many clicks it takes to book a room. Then, look up the booking information in the "Booking History" tab and ensure the information matches.
+- Are error messages helpful? Try to book a room that is already reserved. Error message should be descriptive instead of just stating "An error has occurred".
+- Is the process to cancel/edit a booking difficult? Ensure that the user's future bookings appear in the "Upcoming Bookings" page. There should be Edit and Cancel buttons. If Edit clicked, a prompt similar to the one used when booking a room should appear so the user can change the date/time/classroom. If Cancel clicked, a prompt should appear asking the user if they are sure.
+- Is the sign-in process easy? Enter a correct and incorrect username/password. If correct info entered, user should immediately be taken to homepage. If incorrect info entered, a prompt should appear stating that the username/password was incorrect and asks if the user wants to reset their password.
+
+##### For the specific QA scenario:
+_It takes 6 clicks or less for a staff member to search for classrooms filtered by date, time, building, and capacity, then book an available room if one matches their criteria_
+
+Once the frontend and backend are fully implemented and linked, we can restart the app to a fresh state and follow these steps for a manual test:  
+
+1. Assuming the staff member is already logged in with a valid staff account:
+2. The application defaults to the Room Booking page. Enter a valid date, time, building, and attendee count. (max 5 clicks)
+3. A corresponding room appears in the list of options. Click on the Book button. A success message appears.
+
+### https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/49
+
+**End-to-end testing:**
+- In the login screen, enter a correct username and password. The user should be logged in to the correct account.
+- Enter a correct username and incorrect password. A prompt should appear stating that an incorrect username/password was entered and asks if the user wants to reset their password.
+- Enter an incorrect username. A prompt should appear stating that the account does not exist.
+- Log into a valid staff, registrar, and admin account. After 5 minutes of inactivity, the session should timeout and the user should be logged out.
+- If a user attempts to reset their password while they are currently logged in, they should be asked to enter their current password first.
+- When a staff member is logged in, they should not be able to access registrar- or admin-only pages.
+
+**Unit tests:**
+- The authorize() function can be tested by creating a test user object. Passing in the correct username and password should lead to the test user object being returned.
+- If an incorrect username and/or password is passed in, authorize() should return null.
+- Test the hasRole() function by passing in a valid user and their valid role; it should return true.
+- If an incorrect role for a user is passed in, hasRole() should return false.
+
+##### For the specific QA scenario:
+_The system does not allow staff members and registrars to access the system health and configuration page. The "System Configuration" tab is not visible in the menu bar, and pasting in the link results in an "Access Denied" page._
+
+Once and frontend and backend are linked, we can conduct a manual test with the following steps:
+1. Log in with a valid staff member account.
+2. See the top navigation menu bar. There is no option for System Configuration.
+3. Pasting in the URL for the System Configuration page presents the user with an Access Denied page.
+4. Repeat steps 1-3 with a valid registrar account.
+
+### https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/50
+
+**End-to-end testing:**
+- Log in as a staff member, then reserve any room. In the "Upcoming Bookings" page, the reservation should appear. The information should match the user's initial search criteria.
+- Log in with another staff member account now; the same room and timeslot should not be available.
+- Reserve a room, then edit the booking through the "Upcoming Bookings" page. Upon changing the date, time, or classroom, the modifications should appear.
+- Log in with another staff member account now; the original room and timeslot should be available and ready for booking.
+- Reserve a room, then cancel the booking. The reservation should disappear from the "Upcoming Bookings" page.
+- Log in with another staff member account now; the room and timeslot should be available and ready for booking.
+- After the date and time of a booking has passed, it should appear in the "Booking History" page for no less than 1 year. If the booking is set to repeat, there should be copies of it in both the "Booking History" and "Upcoming Bookings" pages.
+- Log in as a registrar, and edit the list of classrooms and/or available times in the "Edit Schedules" page.
+- If a staff member already has a booking scheduled in one of the affected classrooms, they should receive a notification of changes/deletion of their booking next time they log in.
+- If the registrar adds classrooms to the list, the new rooms should appear as search criteria options when staff members look for available rooms. 
+- If the registrar edits or cancels a staff member's reservation, or books one on a staff member's behalf, the staff member should receive a notification next time they log in. 
+- Log in as an admin and make changes to the system configuration. The changes should be reflected for all users when the system restarts. The changes and data are preserved on the "System Configuration" page (i.e. the sliders, etc. are not reset to their default values after applying changes).
+
+**Unit tests:**
+- Create test classroom objects with associated date/time availabilities. We can call availableRooms() with relevant search criteria as parameters. The matching classroom objects should be returned.
+- If non-matching parameters are passed in, availableRooms() should return null.
+- Create a test booking object, then call editBooking() with relevant parameters. If the edit was successful, the function returns success. If the edit was unsuccessful (maybe because the room was already booked for the requested time), the function returns an error.
+- Repeat with the cancelBooking() function. If the booking exists, the function should always return success.
+- With a valid booking, call upcomingBookings(userID) and assert that the booking's information matches.
+- After the time of the booking has passed, call bookingHistory(userID) and assert that the correct booking appears.
+- Edit system configuration options with the editConfig() function and relevant parameters. The function should return success if valid parameters are passed in. Calling viewConfig() should reflect the recent changes.
+
+We might also consider using a tool to ping the web application consistently to ensure that it remains available most of the time.
+
+##### For the specific QA scenario:
+_The system allows staff members to edit their own upcoming booking times and then presents the original bookings as available to other users._
+
+We can follow these steps to conduct a test for this QA scenario:
+1. As a staff member, create a booking for any room in the future.
+2. Ensure the booking appears in the Booking History page.
+3. Ensure the Cancel button appears next to the relevant booking's information.
+4. Click the Cancel button. The booking is removed from the list.
+5. Now, re-create the booking with the same staff account. The room should appear as available for the requested time. Do not book it.
+6. On another valid staff account, re-create the booking. It should succeed.
+
+### https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/51
+
+**Integration tests:**
+- As a registrar, edit the list of classrooms in the "Edit Schedule" page. It should be possible to easily edit the list by choosing the relevant building from a search bar (or adding a new building), and then entering the relevant room number. The changes should be reflected in the Postgres database.
+- The registrar may also edit or remove the characteristics of a specific classroom (e.g. has projector, class size). The changes should be reflected in the database.
+- There should be an option to overwrite or import classroom data from the CSV file containing the classrooms. All insertions, changes, and deletions should be reflected in the database.
+- There should also be an option to create/delete users and change their passwords. Relevant changes should be reflected in the database, and should be shown in the results of the getUserInfo() function.
+- For system administrators, the system configuration options should be clearly represented on the "System Configuration" page. Making a change to one of the options should be reflected in the return data of the getConfig() function.
+
+**Other tests:**
+- We might also consider improving the modifiability of the code by visually inspecting it. We would like to reduce coupling while abstracting common services, like room booking and reservation editing.
+- Another test would be to see how long it takes to build upon the features implemented in Implementation I when we begin on Cycle II. If we find ourselves having to edit several functions or modules, there might be room for improvement in regard to modifiability. 
+
+##### For the specific QA scenario:
+_A registrar can import a list of classrooms and associated data from a CSV, then choose whether they'd like to add the classrooms to the existing database or completely overwrite it._
+
+We can follow these steps to conduct a test for this QA scenario:
+1. Log in with a valid registrar account.
+2. Ensure the CSV file is formatted properly; that is, with "Room,Building,Capacity,AV Equipment,Location,URL" columns
+3. In the application, click on the "Manage Rooms" button in the navigation bar.
+4. In the Manage Rooms page, an option for adding rooms from a CSV appears.
+5. Click on the Upload CSV button, and upload the relevant CSV file.
+6. Any duplicate rooms are not added, and all new rooms are added to the database. If any errors occur with any rows, a specific error message will appear.
+
+Note: As of October 18, our QA scenario has slightly changed as there will not be an option for choosing whether or not to overwrite the existing classrooms.
+Intead, any duplicate classrooms will automatically be skipped.
+
+### https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/52
+
+**System tests:**
+- As a staff member, log in and enter the room booking page. Filter the rooms based on any combination of criteria, then time how long it takes for results to appear.
+- Select any room to book, then click the "Book Room" button. Time how long it takes for a success message to appear.
+- Click on Booking History and Upcoming Bookings on an account with several past and future bookings, and time how long it takes for results to appear.
+- Time how long the sign in process takes.
+- We'd also like to test how long it takes different pages of the web application to load (e.g. homepage, system health, booking history, edit schedule) and rendering performance for the icons and text.
+
+**Integration tests:**
+- Create test bookings with the createBooking() function, then query the database to see how long the searching operation takes.
+- Create test classrooms with the addClassroom() function, then query the list of rooms in the database with relevant search criteria to see how long the operation takes.
+- Investigate general query performance by checking the database for index usage and caching.
+
+**Stress tests:**
+  
+If possible, we'd like to conduct stress and load testing by simulating multiple operations happening at once. Tools like JMeter can help us investigate what the performance of the system under stressful conditions is like compared to regularly.
+
+##### For the specific QA scenario:
+_A user selects a room to book at a specified date and time while several other operations are occurring, and the booking process completes in 3 seconds or less._
+
+We can follow these steps to conduct a simple test for this QA scenario:
+1. While connected to the UVic wifi network, enter a valid room and date in the Create Booking page.
+2. Once a room appears and the Book button is clicked, start a stopwatch.
+3. The success message should appear and the booking is added to the database in no more than 3 seconds.
+
+Given the nature of our application, it may be difficult to test response times with multiple requests being sent at once, but we could potentially have multiple group members run the application and interact with it at the same time, while one person creates a booking and times how long it takes.
