@@ -41,3 +41,7 @@ We will use PostgreSQL as the server-side data store.
 - The initial schema design became more complex than necessary at this stage, especially when we tried to account for future features like role-based access before the frontend–backend integration was stable.  
 - PostgreSQL enables advanced data structures, but those features should be introduced gradually to ensure smooth implementation.  
 - The project requires further development to fully realize the benefits of this architectural decision.
+
+**Related User Stories**
+- [User Story 4: Staff can view booking history](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/4)
+- [User Story 10: Registrar can manage schedule integrity](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/10)

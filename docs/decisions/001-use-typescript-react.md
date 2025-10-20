@@ -45,3 +45,7 @@ Use TypeScript with React for frontend framework.
 - The trade-off favors maintainability and developer productivity over initial simplicity.  
 - The initial lack of a clear component hierarchy slowed early development and highlighted the importance of planning structure before implementation.  
 - Future iterations may focus on improving internal structure (routing, state management, component hierarchy) within the existing React and Docker setup, rather than introducing additional frameworks.
+
+**Related User Stories**
+- [User Story 1: Staff can sign-in](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/1)
+- [User Story 4: Staff can view booking history](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/4)
