@@ -8,21 +8,15 @@
 
 ### 2. Element Catalog
 
-| **Element**               | **Description**                                                                                       |
-|----------------------------|---------------------------------------------------------------------------------------------------------|
-| **Browser (React App)**       | The client-side runtime process executing in the user's browser. It renders React pages (e.g., ClassroomSearchPage.tsx) and manages UI interactions.
-|
-| **Client-Side State**       | Runtime data held in the browser (e.g., in React state or context). Stores information like the current user's token and the search results.
-|
-| **Web Server (NestJS API)**            | The server-side runtime process. It listens for HTTP requests and orchestrates all backend logic by routing requests to the appropriate controllers.
-|
-| **API Endpoints**               | The "address book" of the API, defined in controllers (e.g., bookings.controller.ts). Routes like POST /bookings are data elements that the server uses to map requests.
-|
-| **Business Logic Services**               | The collection of running services (e.g., bookings.service.ts, users.service.ts) within the NestJS process that execute core application logic.
-|
-| **Database Server (PostgreSQL)**    | The external, persistent database process. It manages all data storage and retrieval, ensuring data integrity and handling concurrent access.
-|
-| **Relational Data (Tables)**    | Relational data storage layer. Stores persistent data for bookings, rooms, users, and logs.            |
+| Element | Description |
+| :--- | :--- |
+| **Browser (React App)** | The client-side runtime process executing in the user's browser. It renders React `pages` (e.g., `ClassroomSearchPage.tsx`) and manages UI interactions. |
+| **Client-Side State** | Runtime data held in the browser (e.g., in React state or context). Stores information like the current user's token and the search results. |
+| **Web Server (NestJS API)** | The server-side runtime process. It listens for HTTP requests and orchestrates all backend logic by routing requests to the appropriate controllers. |
+| **API Endpoints** | The "address book" of the API, defined in `controllers` (e.g., `bookings.controller.ts`). Routes like `POST /bookings` are data elements that the server uses to map requests. |
+| **Business Logic Services** | The collection of running services (e.g., `bookings.service.ts`, `users.service.ts`) within the NestJS process that execute core application logic. |
+| **Database Server (PostgreSQL)** | The external, persistent database process. It manages all data storage and retrieval, ensuring data integrity and handling concurrent access. |
+| **Relational Data (Tables)** | The persistent data stored within the database, organized into tables like `users`, `rooms`, `bookings`, and `logs`. |
 
 ---
 
