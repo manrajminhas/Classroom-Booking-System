@@ -44,3 +44,7 @@ We will use NestJS and TypeScript for the entry layer and backend framework.
 - Early setup was slower than a minimal Express server, but paid off later with clearer module organization.  
 - However, our initial approach led to issues with module hierarchy and routing structure, making certain dependencies harder to manage and causing extra refactoring work.  
 - In future iterations, we can improve maintainability by planning the module and controller hierarchy earlier, and enforcing consistent naming and routing patterns throughout the codebase.
+
+**Related User Stories**
+- [User Story 1: Staff can sign-in](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/1)
+- [User Story 10: Registrar can manage schedule integrity](https://gitlab.csc.uvic.ca/courses/2025091/SENG350_COSI/teams/group_10_proj/-/issues/24)
