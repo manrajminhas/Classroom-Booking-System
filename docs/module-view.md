@@ -33,11 +33,11 @@
 
 ### 4. Rationale
 
-The system uses a **layered architecture** to separate concerns and improve maintainability.  
+The system uses a layered architecture to separate concerns and improve maintainability.  
 
-- The **presentation layer** is built with React to provide a responsive and modular user interface.  
-- The **application layer** (NestJS) is structured around controllers, services, and entities to support clean separation between API handling, business logic, and data access.  
-- The **data layer** uses PostgreSQL to ensure reliable and scalable persistence.  
+- The presentation layer is built with React to provide a responsive and modular user interface.  
+- The application layer (NestJS) is structured around controllers, services, and entities to support clean separation between API handling, business logic, and data access.  
+- The data layer uses PostgreSQL to ensure reliable and scalable persistence.  
 
 ---
 
