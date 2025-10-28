@@ -33,3 +33,13 @@ services:
       POSTGRES_DB: mydb
     ports:
       - '5432:5432'
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: mcp-server
+    environment:
+      BACKEND_URL: http://backend:3001
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true

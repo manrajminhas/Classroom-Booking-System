@@ -39,4 +39,6 @@ https://chatgpt.com/c/68e18220-30cc-832d-a627-33177ed55ef1
 
 15. Will C: How do you link a css file to a tsx file. https://chatgpt.com/share/68e32a3a-3564-8003-a01e-b161ec6f8350
 
-16. Max: Create a skeleton table format in markdown for an elemental catalog.
+16. Max: Create a skeleton table format in markdown for an elemental catalog.  
+
+17. Will S: What is MCP, and how can I use it to allow AI agents to access my TypeScript/NestJS application? (+ 2 other prompts): https://chatgpt.com/share/69005932-d4b8-800d-ae1c-d16f9b28e3c1
