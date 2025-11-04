@@ -42,3 +42,5 @@ https://chatgpt.com/c/68e18220-30cc-832d-a627-33177ed55ef1
 16. Max: Create a skeleton table format in markdown for an elemental catalog.  
 
 17. Will S: What is MCP, and how can I use it to allow AI agents to access my TypeScript/NestJS application? (+ 2 other prompts): https://chatgpt.com/share/69005932-d4b8-800d-ae1c-d16f9b28e3c1
+
+18. Will S: What does a typical Gitlab CI file look like for a NestJS project containing a backend, frontend, and mcp server? https://chatgpt.com/share/6909c21b-0354-800d-9021-362774a04b50
