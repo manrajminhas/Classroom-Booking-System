@@ -33,46 +33,46 @@ export class BookingsController {
     @ApiParam({ name: 'roomNumber', description: 'Specific room to book' })
     @ApiBody({ description: 'Further information needed for the booking' })
     async create(
-        @Param('building') building: string,
-        @Param('roomNumber') roomNumber: string,
-        @Body('startTime') startTime: string,
-        @Body('endTime') endTime: string,
-        @Body('attendees') attendees: number
+    @Param('building') building: string,
+    @Param('roomNumber') roomNumber: string,
+    @Body('startTime') startTime: string,
+    @Body('endTime') endTime: string,
+    @Body('attendees') attendees: number
     ): Promise<Booking> {
-        const userID: number = 1; // PLACEHOLDER!!!!
+    const userID = 1;
+    const room = await this.roomsService.findByLocation(building, roomNumber);
 
-        const room = await this.roomsService.findByLocation(building, roomNumber);
-        if (!room) {
-            throw new NotFoundException('Room not found');
-        }
-        const created = await this.bookingsService.create(
-            userID,
-            room.roomID,
-            new Date(startTime),
-            new Date(endTime),
-            Number(attendees)
-        );
-
-        // ADDED: audit logging (fire-and-forget)
-        this.logsService.logAudit({
-            actorId: userID,
-            actorName: 'system',
-            action: 'booking.create',
-            targetType: 'booking',
-            targetId: String(created.bookingID),
-            before: {},
-            after: {
-                bookingID: created.bookingID,
-                roomID: created.room.roomID,
-                startTime: created.startTime,
-                endTime: created.endTime,
-                attendees: created.attendees,
-            },
-            details: `Created booking for ${building} ${roomNumber}`,
-        });
-
-        return created;
+    if (!room) {
+        throw new NotFoundException(`Room not found: ${building} ${roomNumber}`);
     }
+
+    const created = await this.bookingsService.create(
+        userID,
+        room.roomID,
+        new Date(startTime),
+        new Date(endTime),
+        Number(attendees)
+    );
+
+    this.logsService.logAudit({
+        actorId: userID,
+        actorName: 'system',
+        action: 'booking.create',
+        targetType: 'booking',
+        targetId: String(created.bookingID),
+        before: {},
+        after: {
+        bookingID: created.bookingID,
+        roomID: created.room.roomID,
+        startTime: created.startTime,
+        endTime: created.endTime,
+        attendees: created.attendees,
+        },
+        details: `Created booking for ${building} ${roomNumber}`,
+    });
+
+  return created;
+}
 
     @Get('bookings/:username')
     @ApiOperation({ summary: "Find all of a user's bookings" })
@@ -94,7 +94,6 @@ export class BookingsController {
     async deleteAll(): Promise<{ message: string }> {
         await this.bookingsService.deleteAll();
 
-        // ADDED: audit logging
         this.logsService.logAudit({
             actorId: 1,
             actorName: 'system',
@@ -119,7 +118,6 @@ export class BookingsController {
             throw new NotFoundException('Booking not found');
         }
 
-        // ADDED: audit logging
         this.logsService.logAudit({
             actorId: 1,
             actorName: 'system',
