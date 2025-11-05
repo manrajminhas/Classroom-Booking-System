@@ -4,6 +4,7 @@ import { MoreThanOrEqual, Repository } from 'typeorm';
 import { Room } from './rooms.entity';  
 import { Readable } from 'stream';
 import csv from 'csv-parser';
+import fs from 'fs';
 
 @Injectable()
 export class RoomsService {
@@ -129,9 +130,12 @@ export class RoomsService {
      * @param file - CSV containing room data 
      * @returns The newly saved rooms
      */
-    async addFromCSV(file: Express.Multer.File): Promise<Room[]> {
+    async addFromCSV(file: Express.Multer.File | string): Promise<Room[]> {
         const results: Partial<Room>[] = [];
-        const stream = Readable.from(file.buffer.toString());
+        const stream = 
+                typeof file === 'string'
+                    ? fs.createReadStream(file)
+                    : Readable.from(file.buffer.toString());
 
         await new Promise<void>((resolve, reject) => {
             stream.pipe(csv())

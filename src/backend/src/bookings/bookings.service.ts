@@ -25,8 +25,25 @@ export class BookingsService {
      * @param attendees - Number of attendees expected
      * @returns The newly created booking if successful
      */
+
+    
     async create(userID: number, roomID: number, startTime: Date, endTime: Date, attendees: number): Promise<Booking> {
-        if (startTime > endTime || startTime.getTime() < Date.now()) {
+        console.log(" Received booking request:");
+        console.log("  startTime =", startTime);
+        console.log("  endTime   =", endTime);
+        console.log("  now       =", new Date());
+
+        const toLocal = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        const localStart = toLocal(new Date(startTime));
+        const localEnd = toLocal(new Date(endTime));
+        const localNow = toLocal(new Date());
+
+        console.log(" Adjusted times (local check):");
+        console.log("  localStart =", localStart);
+        console.log("  localEnd   =", localEnd);
+        console.log("  localNow   =", localNow);
+
+        if (localStart > localEnd || localStart.getTime() < localNow.getTime()) {
             throw new BadRequestException('Invalid time entered');
         }
 
@@ -162,7 +179,6 @@ export class BookingsService {
      * 
      * @returns List of all bookings
      */
-
     async findAll(): Promise<Booking[]> {
         return await this.bookingsRepository.find();
     }

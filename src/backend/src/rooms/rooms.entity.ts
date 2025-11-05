@@ -1,5 +1,6 @@
 import { Booking } from 'src/bookings/bookings.entity';
-import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany, Check } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique } from 'typeorm';
+
 
 @Entity()
 @Unique(['building', 'roomNumber'])
