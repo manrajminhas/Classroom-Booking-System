@@ -20,6 +20,8 @@ export interface Booking {
   };
 }
 
+const API = 'http://localhost:3001';
+
 const ClassRoomSearchPage: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedClassroom, setSelectedClassroom] = useState<string>('');
@@ -37,13 +39,16 @@ const ClassRoomSearchPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    axios.get('http://localhost:3001/rooms')
-      .then(res => setRooms(res.data))
+    axios.get(`${API}/rooms`)
+      .then(res => {
+        const sorted = res.data.sort(sortRooms);
+        setRooms(sorted);
+      })
       .catch(err => console.error("Failed to load rooms:", err));
   }, []);
 
   useEffect(() => {
-    axios.get('http://localhost:3001/bookings')
+    axios.get(`${API}/bookings`)
       .then(res => setBookings(res.data))
       .catch(err => console.error("Failed to load bookings:", err))
       .finally(() => setLoading(false));
@@ -61,7 +66,6 @@ const ClassRoomSearchPage: React.FC = () => {
     setSelectedEndTime(event.target.value);
   };
 
-  // ✅ Fixed timezone-aware time formatting
   const formatTime = (t: string) => {
     const [hour, minute] = t.split(":");
     const today = new Date();
@@ -73,7 +77,7 @@ const ClassRoomSearchPage: React.FC = () => {
       parseInt(minute),
       0
     );
-    return local.toISOString(); // converts to UTC correctly
+    return local.toISOString();
   };
 
   const handleReserveRoom = async () => {
@@ -85,11 +89,14 @@ const ClassRoomSearchPage: React.FC = () => {
     const [building, roomNumber] = selectedClassroom.split("_");
 
     try {
-      await axios.post(`http://localhost:3001/bookings/${encodeURIComponent(building)}/${encodeURIComponent(roomNumber)}`, {
-        startTime: formatTime(selectedStartTime),
-        endTime: formatTime(selectedEndTime),
-        attendees: 1
-      });
+      await axios.post(
+        `${API}/bookings/${encodeURIComponent(building)}/${encodeURIComponent(roomNumber)}`,
+        {
+          startTime: formatTime(selectedStartTime),
+          endTime: formatTime(selectedEndTime),
+          attendees: 1
+        }
+      );
 
       alert("Booking created successfully!");
     } catch (err: any) {
@@ -98,16 +105,22 @@ const ClassRoomSearchPage: React.FC = () => {
     }
   };
 
+  function sortRooms(a: Room, b: Room) {
+    const ab = a.building.localeCompare(b.building);
+    if (ab !== 0) return ab;
+    return a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true });
+  }
+
   return (
     <div className="Search-group">
       <h2>Book a Room</h2>
 
-      <h3>Classroom: </h3>
+      <h3>Classroom:</h3>
       <select value={selectedClassroom} onChange={handleClassroomChange}>
         <option value="">-- Select classroom --</option>
         {rooms.map((room) => (
           <option key={room.roomID} value={`${room.building}_${room.roomNumber}`}>
-            {room.building} {room.roomNumber}
+            {`${room.building} ${room.roomNumber} — Capacity: ${room.capacity}`}
           </option>
         ))}
       </select>
@@ -133,9 +146,3 @@ const ClassRoomSearchPage: React.FC = () => {
 };
 
 export default ClassRoomSearchPage;
-
-//INSERT INTO "user" ("userID", "username", "email", "password")
-//VALUES (1, 'testuser', 'test@example.com', 'password');
-//docker exec -it db psql -U postgres -d mydb
-//\d
-//\q
