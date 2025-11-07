@@ -6,12 +6,15 @@ import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany } from 'typeo
 export class User {
     @PrimaryGeneratedColumn()
     userID: number;
-    
+
     @Column({ type: 'varchar' })
     username: string;
 
     @Column({ type: 'varchar' })
     passwordHash: string;
+
+    @Column({ type: 'varchar', default: 'staff' })
+    role: 'staff' | 'registrar' | 'admin';
 
     @OneToMany(() => Booking, (booking) => booking.user)
     bookings: Booking[];
