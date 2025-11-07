@@ -24,7 +24,6 @@ const SignIn: React.FC = () => {
 
       const user = await response.json();
 
-      // Store user info for later use (you can use Context or localStorage)
       localStorage.setItem('user', JSON.stringify(user));
       setSuccess(`Welcome ${user.username}! Role: ${user.role}`);
     } catch (err: any) {
