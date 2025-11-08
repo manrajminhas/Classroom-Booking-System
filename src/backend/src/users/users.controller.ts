@@ -53,6 +53,16 @@ export class UsersController {
     @ApiOperation({ summary: 'Authenticate user and return JWT token' })
     @ApiResponse({ status: 200, description: 'JWT token + user info' })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
+    @ApiBody({
+    schema: {
+        type: 'object',
+        properties: {
+        username: { type: 'string', example: 'admin' },
+        password: { type: 'string', example: 'password123' },
+        },
+        required: ['username', 'password'],
+    },
+    })
     async login(@Body() body: { username: string; password: string }) {
         const user = await this.authService.validateUser(body.username, body.password);
         const token = await this.authService.login(user);
