@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, FindOptionsWhere } from 'typeorm';
 import { Log } from './logs.entity';
+import { Like } from 'typeorm';
 
 
 type CreateLogInput = {
@@ -85,7 +86,7 @@ export class LogsService {
     if (params.from !== null && params.to !== null) {
       where.createdAt = Between(params.from, params.to);
     } else if (params.from !== null) {
-      where.createdAt = Between(params.from, new Date(8640000000000000)); // max date
+      where.createdAt = Between(params.from, new Date(8640000000000000));
     } else if (params.to !== null) {
       where.createdAt = Between(new Date(0), params.to);
     }
@@ -94,5 +95,17 @@ export class LogsService {
       where,
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async getLogsFilteredByActions(prefixes: string[]): Promise<Log[]> {
+    const qb = this.logRepository.createQueryBuilder('log');
+    qb.where(
+      prefixes
+        .map((p, i) => `log.action LIKE :prefix${i}`)
+        .join(' OR '),
+      Object.fromEntries(prefixes.map((p, i) => [`prefix${i}`, `${p}%`]))
+    );
+    qb.orderBy('log.createdAt', 'DESC');
+    return qb.getMany();
   }
 }

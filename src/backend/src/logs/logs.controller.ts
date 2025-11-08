@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
-import { LogsService } from './logs.service';
-import { Log } from './logs.entity';
 //mport { Roles } from '../users/roles.decorator';
 //import { RolesGuard } from '../users/roles.guard';
 //import { UserRole } from '../users/users.entity';
+
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { LogsService } from './logs.service';
+import { Log } from './logs.entity';
+import { Like } from 'typeorm';
 
 type CreateLogBody = {
   userId: number;
@@ -18,7 +20,6 @@ type CreateLogBody = {
 };
 
 @Controller('logs')
-//@UseGuards(RolesGuard)
 export class LogsController {
   constructor(private readonly logsService: LogsService) {}
 
@@ -37,6 +38,16 @@ export class LogsController {
     const from = fromStr ? new Date(fromStr) : null;
     const to = toStr ? new Date(toStr) : null;
     return this.logsService.getLogsFiltered({ actorUsername, action, from, to });
+  }
+
+  @Get('registrar')
+  async getRegistrarLogs(): Promise<Log[]> {
+    return this.logsService.getLogsFilteredByActions(['booking.', 'room.']);
+  }
+
+  @Get('admin')
+  async getAdminLogs(): Promise<Log[]> {
+    return this.logsService.getAllLogs();
   }
 
   @Post()
