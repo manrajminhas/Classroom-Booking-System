@@ -22,9 +22,12 @@ const SignIn: React.FC = () => {
         throw new Error('Invalid credentials');
       }
 
-      const user = await response.json();
+      const data = await response.json();
+      const { access_token, user } = data;
 
+      localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
+
       setSuccess(`Welcome ${user.username}! Role: ${user.role}`);
     } catch (err: any) {
       setError(err.message || 'Login failed');
