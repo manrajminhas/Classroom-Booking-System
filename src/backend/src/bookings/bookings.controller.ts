@@ -1,11 +1,9 @@
-import { Controller, Body, Get, Post, Put, Delete, Param, NotFoundException, ConflictException } from "@nestjs/common";
+import { Controller, Body, Get, Post, Delete, Param, NotFoundException, BadRequestException, ParseIntPipe } from "@nestjs/common";
 import { BookingsService } from "./bookings.service";
 import { Booking } from "./bookings.entity";
 import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam } from "@nestjs/swagger";
 import { UsersService } from "src/users/users.service";
 import { RoomsService } from "src/rooms/rooms.service";
-import { BadRequestException } from "@nestjs/common";
-import { ParseIntPipe } from "@nestjs/common";
 import { LogsService } from "src/logs/logs.service";
 
 @ApiTags('bookings')
@@ -27,74 +25,75 @@ export class BookingsController {
 
     @Post(':building/:roomNumber')
     @ApiResponse({ status: 200, description: 'Booking created', type: Booking })
-    @ApiResponse({ status: 400, description: 'Attendees are greater than the capacity of the room' })
+    @ApiResponse({ status: 400, description: 'Attendees exceed room capacity' })
     @ApiResponse({ status: 404, description: 'Room not found' })
-    @ApiParam({ name: 'building', description: 'Building in which to book a room' })
-    @ApiParam({ name: 'roomNumber', description: 'Specific room to book' })
-    @ApiBody({ description: 'Further information needed for the booking' })
+    @ApiParam({ name: 'building', description: 'Building of the room' })
+    @ApiParam({ name: 'roomNumber', description: 'Room number' })
+    @ApiBody({ description: 'Booking details' })
     async create(
-    @Param('building') building: string,
-    @Param('roomNumber') roomNumber: string,
-    @Body('startTime') startTime: string,
-    @Body('endTime') endTime: string,
-    @Body('attendees') attendees: number
+        @Param('building') building: string,
+        @Param('roomNumber') roomNumber: string,
+        @Body('startTime') startTime: string,
+        @Body('endTime') endTime: string,
+        @Body('attendees') attendees: number,
+        @Body('username') username: string
     ): Promise<Booking> {
-    const userID = 1;
-    const room = await this.roomsService.findByLocation(building, roomNumber);
+        const user = await this.usersService.findByUsername(username);
+        if (!user) {
+            throw new NotFoundException(`User not found: ${username}`);
+        }
 
-    if (!room) {
-        throw new NotFoundException(`Room not found: ${building} ${roomNumber}`);
+        const room = await this.roomsService.findByLocation(building, roomNumber);
+        if (!room) {
+            throw new NotFoundException(`Room not found: ${building} ${roomNumber}`);
+        }
+
+        const created = await this.bookingsService.create(
+            user.userID,
+            room.roomID,
+            new Date(startTime),
+            new Date(endTime),
+            Number(attendees)
+        );
+
+        await this.logsService.logAudit({
+            actorId: user.userID,
+            actorName: user.username,
+            action: 'booking.create',
+            targetType: 'booking',
+            targetId: String(created.bookingID),
+            before: {},
+            after: {
+                bookingID: created.bookingID,
+                roomID: created.room.roomID,
+                startTime: created.startTime,
+                endTime: created.endTime,
+                attendees: created.attendees,
+            },
+            details: `Created booking for ${building} ${roomNumber}`,
+        });
+
+        return created;
     }
 
-    const created = await this.bookingsService.create(
-        userID,
-        room.roomID,
-        new Date(startTime),
-        new Date(endTime),
-        Number(attendees)
-    );
-
-    this.logsService.logAudit({
-        actorId: userID,
-        actorName: 'system',
-        action: 'booking.create',
-        targetType: 'booking',
-        targetId: String(created.bookingID),
-        before: {},
-        after: {
-        bookingID: created.bookingID,
-        roomID: created.room.roomID,
-        startTime: created.startTime,
-        endTime: created.endTime,
-        attendees: created.attendees,
-        },
-        details: `Created booking for ${building} ${roomNumber}`,
-    });
-
-  return created;
-}
-
     @Get('bookings/:username')
-    @ApiOperation({ summary: "Find all of a user's bookings" })
+    @ApiOperation({ summary: "Find all bookings for a user" })
     @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
-    @ApiParam({ name: 'username', description: 'Username of the user to search' })
+    @ApiParam({ name: 'username', description: 'Username' })
     async findByUser(@Param('username') username: string): Promise<Booking[]> {
         const user = await this.usersService.findByUsername(username);
         if (!user) {
             throw new NotFoundException('User not found');
         }
-
-        const userID: number = user.userID;
-        return await this.bookingsService.findByUser(userID);
+        return await this.bookingsService.findByUser(user.userID);
     }
 
     @Delete()
     @ApiOperation({ summary: 'Delete all bookings' })
-    @ApiResponse({ status: 200, description: 'All bookings deleted successfully' })
+    @ApiResponse({ status: 200, description: 'All bookings deleted' })
     async deleteAll(): Promise<{ message: string }> {
         await this.bookingsService.deleteAll();
-
-        this.logsService.logAudit({
+        await this.logsService.logAudit({
             actorId: 1,
             actorName: 'system',
             action: 'booking.deleteAll',
@@ -104,21 +103,17 @@ export class BookingsController {
             after: {},
             details: 'Deleted all bookings',
         });
-
         return { message: 'All bookings deleted successfully' };
     }
 
     @Delete(':bookingID')
     async deleteBooking(@Param('bookingID') bookingID: string): Promise<{ message: string }> {
         const id = Number(bookingID);
-
         const deleted = await this.bookingsService.delete(id);
-
         if (!deleted) {
             throw new NotFoundException('Booking not found');
         }
-
-        this.logsService.logAudit({
+        await this.logsService.logAudit({
             actorId: 1,
             actorName: 'system',
             action: 'booking.delete',
@@ -128,30 +123,29 @@ export class BookingsController {
             after: {},
             details: `Deleted booking ${id}`,
         });
-
         return { message: 'Booking deleted successfully' };
     }
 
     @Get('date/:date')
-    @ApiOperation({ summary: 'Find all bookings on a given date (UTC day)' })
+    @ApiOperation({ summary: 'Find bookings by date (UTC day)' })
     @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
     @ApiParam({ name: 'date', description: 'ISO date (YYYY-MM-DD)' })
     async findByDate(@Param('date') dateStr: string): Promise<Booking[]> {
         const d = new Date(dateStr);
         if (Number.isNaN(d.getTime())) {
-        throw new BadRequestException('Invalid date. Use YYYY-MM-DD or ISO string.');
+            throw new BadRequestException('Invalid date. Use YYYY-MM-DD or ISO format.');
         }
         return this.bookingsService.findByDate(d);
     }
 
     @Get('room/:roomID')
-    @ApiOperation({ summary: 'Find all bookings for a specific room' })
+    @ApiOperation({ summary: 'Find bookings for a room' })
     @ApiResponse({ status: 200, description: 'List of bookings', type: [Booking] })
     @ApiParam({ name: 'roomID', description: 'Room ID' })
     async findByRoom(@Param('roomID', ParseIntPipe) roomID: number): Promise<Booking[]> {
         const room = await this.roomsService.findByID(roomID);
         if (!room) {
-        throw new NotFoundException('Room not found');
+            throw new NotFoundException('Room not found');
         }
         return this.bookingsService.findByRoom(roomID);
     }
@@ -159,26 +153,22 @@ export class BookingsController {
     @Get('user/:username/past')
     @ApiOperation({ summary: "Find a user's past bookings" })
     @ApiResponse({ status: 200, description: 'List of past bookings', type: [Booking] })
-    @ApiParam({ name: 'username', description: 'Username' })
     async findPastForUser(@Param('username') username: string): Promise<Booking[]> {
         const user = await this.usersService.findByUsername(username);
         if (!user) {
-        throw new NotFoundException('User not found');
+            throw new NotFoundException('User not found');
         }
         return this.bookingsService.findPastForUser(user.userID);
     }
 
     @Get('user/:username/future')
-        @ApiOperation({ summary: "Find a user's future bookings" })
-        @ApiResponse({ status: 200, description: 'List of future bookings', type: [Booking] })
-        @ApiParam({ name: 'username', description: 'Username' })
-        async findFutureForUser(@Param('username') username: string): Promise<Booking[]> {
-            const user = await this.usersService.findByUsername(username);
-            if (!user) {
+    @ApiOperation({ summary: "Find a user's future bookings" })
+    @ApiResponse({ status: 200, description: 'List of future bookings', type: [Booking] })
+    async findFutureForUser(@Param('username') username: string): Promise<Booking[]> {
+        const user = await this.usersService.findByUsername(username);
+        if (!user) {
             throw new NotFoundException('User not found');
-            }
-            return this.bookingsService.findFutureForUser(user.userID);
         }
-
-
+        return this.bookingsService.findFutureForUser(user.userID);
+    }
 }

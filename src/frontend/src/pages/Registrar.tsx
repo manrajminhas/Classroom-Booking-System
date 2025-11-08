@@ -7,6 +7,16 @@ type Room = {
   capacity: number;
 };
 
+type Log = {
+  id: number;
+  action: string;
+  actorUsername: string | null;
+  targetType: string | null;
+  targetId: string | null;
+  createdAt: string;
+  details: string | null;
+};
+
 const API = "http://localhost:3001";
 
 const Registrar: React.FC = () => {
@@ -15,9 +25,11 @@ const Registrar: React.FC = () => {
   const [roomNumber, setRoomNumber] = useState("");
   const [capacity, setCapacity] = useState<number>(12);
   const [selectedKey, setSelectedKey] = useState<string>("");
+  const [logs, setLogs] = useState<Log[]>([]);
 
   useEffect(() => {
     loadRooms();
+    loadLogs();
   }, []);
 
   const loadRooms = () => {
@@ -31,6 +43,20 @@ const Registrar: React.FC = () => {
         }
       })
       .catch((err) => console.error("Error loading rooms:", err));
+  };
+
+  const loadLogs = () => {
+    fetch(`${API}/logs/filter?`)
+      .then((res) => res.json())
+      .then((data: Log[]) => {
+        const filtered = data.filter(
+          (log) =>
+            log.action.startsWith("room.") ||
+            log.action.startsWith("booking.")
+        );
+        setLogs(filtered.slice(0, 10));
+      })
+      .catch((err) => console.error("Error loading logs:", err));
   };
 
   const addRoom = async () => {
@@ -62,7 +88,8 @@ const Registrar: React.FC = () => {
       setBuilding("");
       setRoomNumber("");
       setCapacity(12);
-      loadRooms(); 
+      loadRooms();
+      loadLogs();
     } catch (err: any) {
       alert(`Error adding room: ${err.message}`);
     }
@@ -84,7 +111,8 @@ const Registrar: React.FC = () => {
       }
 
       alert(`Deleted room ${b} ${rn}`);
-      loadRooms(); 
+      loadRooms();
+      loadLogs();
     } catch (err: any) {
       alert(`Error deleting room: ${err.message}`);
     }
@@ -117,7 +145,7 @@ const Registrar: React.FC = () => {
         <button onClick={addRoom}>Add Room</button>
       </section>
 
-      <section>
+      <section style={{ marginBottom: 24 }}>
         <h4>Delete Room</h4>
         <select
           value={selectedKey}
@@ -134,6 +162,40 @@ const Registrar: React.FC = () => {
           ))}
         </select>
         <button onClick={deleteRoom}>Delete</button>
+      </section>
+
+      <section>
+        <h4>Recent Activity</h4>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Actor</th>
+              <th>Action</th>
+              <th>Target</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: "center", color: "gray" }}>
+                  No recent activity
+                </td>
+              </tr>
+            ) : (
+              logs.map((log) => (
+                <tr key={log.id}>
+                  <td>{new Date(log.createdAt).toLocaleString()}</td>
+                  <td>{log.actorUsername || "System"}</td>
+                  <td>{log.action}</td>
+                  <td>{log.targetType} {log.targetId}</td>
+                  <td>{log.details || "-"}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </section>
     </div>
   );
