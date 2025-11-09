@@ -50,7 +50,7 @@ export class UsersService {
     async create(username: string, password: string, role: 'staff' | 'registrar' | 'admin' = 'staff') {
         const existing = await this.usersRepository.findOne({ where: { username } });
         if (existing) {
-            throw new Error('User already exists');
+            throw new ConflictException('User already exists');
         }
 
         const passwordHash = await bcrypt.hash(password, 10);

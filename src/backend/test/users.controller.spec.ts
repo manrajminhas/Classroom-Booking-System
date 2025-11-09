@@ -16,9 +16,15 @@ describe('UsersController', () => {
     delete: vi.fn(),
   };
 
+  const mockAuthService = {
+    validateUser: vi.fn(),
+    login: vi.fn(),
+  } as any;
+
   beforeEach(() => {
     Object.values(mockUsersService).forEach((fn) => fn.mockReset());
-    controller = new UsersController(mockUsersService as unknown as UsersService);
+    Object.values(mockAuthService).forEach((fn: any) => fn.mockReset());
+    controller = new UsersController(mockUsersService as unknown as UsersService, mockAuthService as any);
   });
 
   afterEach(() => {
@@ -82,8 +88,7 @@ describe('UsersController', () => {
       });
 
       const result = await controller.create({ username: 'newuser', password: 'pw' } as any);
-
-      expect(mockUsersService.create).toHaveBeenCalledWith('newuser', 'pw');
+      expect(mockUsersService.create).toHaveBeenCalledWith('newuser', 'pw', 'staff');
       expect(result).toEqual({ userID: 3, username: 'newuser' });
     });
 
@@ -92,32 +97,32 @@ describe('UsersController', () => {
       await expect(controller.create({ username: 'dup', password: 'pw' } as any)).rejects.toThrow(
         ConflictException,
       );
-      expect(mockUsersService.create).toHaveBeenCalledWith('dup', 'pw');
+      expect(mockUsersService.create).toHaveBeenCalledWith('dup', 'pw', 'staff');
     });
   });
 
   describe('login', () => {
     it('returns public user when credentials are valid', async () => {
-      mockUsersService.validate.mockResolvedValue({
-        userID: 9,
-        username: 'valid',
-        passwordHash: 'hashed',
-      });
+      const publicUser = { userID: 9, username: 'valid', role: 'staff' };
+      mockAuthService.validateUser.mockResolvedValue(publicUser);
+      const token = { access_token: 't', user: { username: 'valid', role: 'staff', sub: 9 } };
+      mockAuthService.login.mockResolvedValue(token);
 
       const result = await controller.login({ username: 'valid', password: 'ok' });
 
-      expect(mockUsersService.validate).toHaveBeenCalledWith('valid', 'ok');
-      expect(result).toEqual({ userID: 9, username: 'valid' });
+      expect(mockAuthService.validateUser).toHaveBeenCalledWith('valid', 'ok');
+      expect(mockAuthService.login).toHaveBeenCalledWith(publicUser);
+      expect(result).toEqual(token);
     });
 
     it('throws UnauthorizedException when credentials are invalid', async () => {
-      mockUsersService.validate.mockResolvedValue(null);
+      mockAuthService.validateUser.mockRejectedValue(new UnauthorizedException());
 
       await expect(controller.login({ username: 'bad', password: 'no' })).rejects.toThrow(
-        UnauthorizedException,
+        UnauthorizedException
       );
 
-      expect(mockUsersService.validate).toHaveBeenCalledWith('bad', 'no');
+      expect(mockAuthService.validateUser).toHaveBeenCalledWith('bad', 'no');
     });
   });
 
@@ -168,16 +173,14 @@ describe('UsersController', () => {
     });
 
     it('never leaks passwordHash on login success', async () => {
-      mockUsersService.validate.mockResolvedValue({
-        userID: 2,
-        username: 'login',
-        passwordHash: 'h',
-      });
+      const publicUser = { userID: 2, username: 'login', role: 'staff' };
+      mockAuthService.validateUser.mockResolvedValue(publicUser);
+      const token = { access_token: 't2', user: { username: 'login', role: 'staff', sub: 2 } };
+      mockAuthService.login.mockResolvedValue(token);
 
       const result = await controller.login({ username: 'login', password: 'pw' });
 
-      expect(result).toMatchObject({ userID: 2, username: 'login' });
-      expect((result as any).passwordHash).toBeUndefined();
+      expect(result).toEqual(token);
     });
   });
 });
