@@ -143,6 +143,7 @@ export class RoomsService {
                     const roomStr = data['Room'];
 
                     // Split the field and remove any empty spaces
+                    if (!roomStr) return;
                     const roomParts = roomStr.split(' ').filter(Boolean);
                     
                     results.push({

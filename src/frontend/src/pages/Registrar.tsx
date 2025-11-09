@@ -215,6 +215,7 @@ const Registrar: React.FC = () => {
   };
 
   const roomCounts = bookings.reduce<Record<string, number>>((acc, b) => {
+    if (!b.room) return acc;
     const key = `${b.room.building} ${b.room.roomNumber}`;
     acc[key] = (acc[key] || 0) + 1;
     return acc;
