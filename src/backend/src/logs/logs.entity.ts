@@ -5,10 +5,10 @@ export class Log {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   action: string;
 
-  @Column()
+  @Column({ type: 'int' })
   userId: number;
 
   @Column({ type: 'varchar', nullable: true })
