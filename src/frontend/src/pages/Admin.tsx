@@ -9,6 +9,10 @@ interface Log {
   targetId: string | null;
   createdAt: string;
   details: string | null;
+  after?: {
+    startTime?: string;
+    endTime?: string;
+  };
 }
 
 interface Health {
@@ -45,6 +49,14 @@ const AdminPage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const formatTime = (t?: string) => {
+    if (!t) return '—';
+    return new Date(t).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <h1>Admin Dashboard</h1>
@@ -79,17 +91,19 @@ const AdminPage: React.FC = () => {
         }}>
           <thead>
             <tr style={{ backgroundColor: '#efefef', textAlign: 'left' }}>
-              <th style={{ padding: '8px' }}>Time</th>
+              <th style={{ padding: '8px' }}>Time (Log)</th>
               <th style={{ padding: '8px' }}>Actor</th>
               <th style={{ padding: '8px' }}>Action</th>
               <th style={{ padding: '8px' }}>Target</th>
+              <th style={{ padding: '8px' }}>Start Time</th>
+              <th style={{ padding: '8px' }}>End Time</th>
               <th style={{ padding: '8px' }}>Details</th>
             </tr>
           </thead>
           <tbody>
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: '1rem', textAlign: 'center', color: '#888' }}>
+                <td colSpan={7} style={{ padding: '1rem', textAlign: 'center', color: '#888' }}>
                   No logs available
                 </td>
               </tr>
@@ -100,6 +114,8 @@ const AdminPage: React.FC = () => {
                   <td style={{ padding: '8px' }}>{log.actorUsername || 'System'}</td>
                   <td style={{ padding: '8px' }}>{log.action}</td>
                   <td style={{ padding: '8px' }}>{log.targetType} {log.targetId}</td>
+                  <td style={{ padding: '8px' }}>{formatTime(log.after?.startTime)}</td>
+                  <td style={{ padding: '8px' }}>{formatTime(log.after?.endTime)}</td>
                   <td style={{ padding: '8px' }}>{log.details || '-'}</td>
                 </tr>
               ))
