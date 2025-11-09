@@ -17,7 +17,7 @@ export class UsersController {
     @ApiResponse({ status: 200, description: 'List of users', type: [PublicUser] })
     async findAll(): Promise<PublicUser[]> {
         const users = await this.usersService.findAll();
-        return users.map(({ passwordHash, ...secureUser }) => secureUser); // Remove passwordHash from each use
+        return users.map(({ passwordHash, ...secureUser }) => secureUser);
     }
 
     @Get(':username')
@@ -30,23 +30,49 @@ export class UsersController {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        const { passwordHash, ...secureUser } = user; // Remove passwordHash from each use
+        const { passwordHash, ...secureUser } = user;
         return secureUser;
     }
 
     @Post()
     @ApiOperation({ summary: 'Create a user' })
-    @ApiResponse({ status: 201, description: 'The user has been created', type: PublicUser })
-    @ApiResponse({ status: 409, description: 'The user already exists' })
-    @ApiBody({ description: 'Fields to input', type: PublicUser })
-    async create(@Body() userData: Omit<User, 'userID' | 'passwordHash'> & { password: string }): Promise<PublicUser> {
-        try {
-            const user = await this.usersService.create(userData.username, userData.password);
-            const { passwordHash, ...secureUser } = user;
-            return secureUser;
-        } catch {
-            throw new ConflictException('User already exists');
-        }
+    @ApiResponse({ status: 201, description: 'User created', type: PublicUser })
+    @ApiResponse({ status: 409, description: 'User already exists' })
+    @ApiBody({
+    schema: {
+        type: 'object',
+        properties: {
+        username: { type: 'string', example: 'admin' },
+        password: { type: 'string', example: 'password123' },
+        role: {
+            type: 'string',
+            enum: ['staff', 'registrar', 'admin'],
+            example: 'admin',
+            description: 'Optional role for the user',
+        },
+        },
+        required: ['username', 'password'],
+    },
+    })
+    async create(
+    @Body()
+    userData: {
+        username: string;
+        password: string;
+        role?: 'staff' | 'registrar' | 'admin';
+    },
+    ): Promise<PublicUser> {
+    try {
+        const user = await this.usersService.create(
+        userData.username,
+        userData.password,
+        userData.role || 'staff',
+        );
+        const { passwordHash, ...secureUser } = user;
+        return secureUser;
+    } catch {
+        throw new ConflictException('User already exists');
+    }
     }
 
     @Post('login')
