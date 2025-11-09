@@ -183,25 +183,30 @@ const Registrar: React.FC = () => {
   };
 
   const cancelBooking = async (bookingID: number) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+  if (!window.confirm("Are you sure you want to cancel this booking?")) return;
 
-    try {
-      const res = await fetch(`${API}/bookings/${bookingID}`, {
-        method: "DELETE",
-      });
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const username = user.username;
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to delete booking");
-      }
+  try {
+    const res = await fetch(`${API}/bookings/${bookingID}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
 
-      alert("Booking cancelled!");
-      loadBookings();
-      loadLogs();
-    } catch (err: any) {
-      alert(`Error cancelling booking: ${err.message}`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to delete booking");
     }
-  };
+
+    alert("Booking cancelled!");
+    loadBookings();
+    loadLogs();
+  } catch (err: any) {
+    alert(`Error cancelling booking: ${err.message}`);
+  }
+};
 
   const formatDateTime = (t?: string) => {
     if (!t) return "—";
