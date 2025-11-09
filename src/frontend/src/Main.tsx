@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 
 import Dashboard from './pages/Dashboard.tsx';
@@ -11,8 +11,44 @@ import Registrar from './pages/Registrar.tsx';
 import './styles/Main.css';
 
 const Main: React.FC = () => {
-  const isAuthenticated = !!localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ username?: string; role?: string }>({});
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+
+    if (token && storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    } else {
+      setIsAuthenticated(false);
+    }
+
+    setIsLoaded(true);
+  }, []);
+
+  const handleLogin = () => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    }
+  };
+
+  if (!isLoaded) return <div>Loading...</div>;
 
   return (
     <Router>
@@ -36,6 +72,8 @@ const Main: React.FC = () => {
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                setIsAuthenticated(false);
+                setUser({});
                 window.location.href = '/SignIn';
               }}
               className="navLink"
@@ -47,7 +85,17 @@ const Main: React.FC = () => {
       </nav>
 
       <Routes>
-        <Route path="/SignIn" element={<SignIn />} />
+        <Route
+          path="/SignIn"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/HomePage" replace />
+            ) : (
+              <SignIn onLogin={handleLogin} />
+            )
+          }
+        />
+
         <Route
           path="/HomePage"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/SignIn" replace />}
@@ -60,6 +108,7 @@ const Main: React.FC = () => {
           path="/MyBookings"
           element={isAuthenticated ? <MyBookings /> : <Navigate to="/SignIn" replace />}
         />
+
         <Route
           path="/Admin"
           element={
@@ -80,6 +129,8 @@ const Main: React.FC = () => {
             )
           }
         />
+
+        <Route path="/" element={<Navigate to="/SignIn" replace />} />
         <Route path="*" element={<Navigate to="/SignIn" replace />} />
       </Routes>
     </Router>
