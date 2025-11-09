@@ -10,6 +10,7 @@ import { Room } from './rooms/rooms.entity';
 import { Booking } from './bookings/bookings.entity';
 import { User } from './users/users.entity';
 import { Log } from './logs/logs.entity';
+import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -29,6 +30,7 @@ dotenv.config();
     BookingsModule,
     UsersModule,
     LogsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

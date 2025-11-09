@@ -47,16 +47,21 @@ export class UsersService {
      * @param password - Plaintext password of the user to create
      * @returns The newly created user object
      */
-    async create(username: string, password: string): Promise<User> {
-        const exists = await this.usersRepository.findOneBy({ username });
-        if (exists) {
-            throw new ConflictException('User already exists');
+    async create(username: string, password: string, role: 'staff' | 'registrar' | 'admin' = 'staff') {
+        const existing = await this.usersRepository.findOne({ where: { username } });
+        if (existing) {
+            throw new Error('User already exists');
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = this.usersRepository.create({ username, passwordHash });
-        return this.usersRepository.save(user);
-    }
+        const newUser = this.usersRepository.create({
+            username,
+            passwordHash,
+            role,
+        });
+
+        return this.usersRepository.save(newUser);
+        }
 
     /**
      * Validates a user's login credentials.

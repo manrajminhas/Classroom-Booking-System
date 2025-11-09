@@ -1,5 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
+import { JwtAuthGuard } from './auth/jwt.guard';
+import { RolesGuard } from './auth/roles.guard';
+import { Roles } from './auth/roles.decorator';
 
 @Controller()
 export class AppController {
@@ -17,5 +20,18 @@ export class AppController {
       uptime: process.uptime(),
       timestamp: new Date(),
     };
+  }
+
+  @Get('protected')
+  @UseGuards(JwtAuthGuard)
+  getProtected() {
+    return { ok: true, area: 'protected' };
+  }
+
+  @Get('admin-test')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  getAdminOnly() {
+    return { ok: true, area: 'admin-only' };
   }
 }

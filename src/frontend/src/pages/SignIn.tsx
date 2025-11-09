@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const SignIn: React.FC = () => {
+interface SignInProps {
+  onLogin: () => void;
+}
+
+const SignIn: React.FC<SignInProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
 
     try {
       const response = await fetch('http://localhost:3001/users/login', {
@@ -18,14 +22,16 @@ const SignIn: React.FC = () => {
         body: JSON.stringify({ username, password }),
       });
 
-      if (!response.ok) {
-        throw new Error('Invalid credentials');
-      }
+      if (!response.ok) throw new Error('Invalid credentials');
 
-      const user = await response.json();
+      const data = await response.json();
+      const { access_token, user } = data;
 
+      localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
-      setSuccess(`Welcome ${user.username}! Role: ${user.role}`);
+
+      onLogin();
+      navigate('/HomePage');
     } catch (err: any) {
       setError(err.message || 'Login failed');
     }
@@ -59,7 +65,6 @@ const SignIn: React.FC = () => {
       </form>
 
       {error && <p className="error-message">{error}</p>}
-      {success && <p className="success-message">{success}</p>}
     </div>
   );
 };
