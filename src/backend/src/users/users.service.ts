@@ -20,7 +20,6 @@ export class UsersService {
         return await this.usersRepository.find();
     } 
 
-
     /** Finds a user with a matching username.
      * 
      * @param username - The username of the user to find
@@ -45,6 +44,7 @@ export class UsersService {
      * 
      * @param username - Username of the user to create
      * @param password - Plaintext password of the user to create
+     * @param role - Role of the user to create
      * @returns The newly created user object
      */
     async create(username: string, password: string, role: 'staff' | 'registrar' | 'admin' = 'staff') {

@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, FindOptionsWhere } from 'typeorm';
 import { Log } from './logs.entity';
-import { Like } from 'typeorm';
-
 
 type CreateLogInput = {
   userId: number;
@@ -36,6 +34,7 @@ export class LogsService {
     private readonly logRepository: Repository<Log>,
   ) {}
 
+  /** Creates and saves a log entry. */
   async createLog(input: CreateLogInput): Promise<Log> {
     const log = this.logRepository.create({
       userId: input.userId,
@@ -51,10 +50,12 @@ export class LogsService {
     return this.logRepository.save(log);
   }
 
+  /** Retrieves all logs, ordered by creation date descending. */
   async getAllLogs(): Promise<Log[]> {
     return this.logRepository.find({ order: { createdAt: 'DESC' } });
   }
 
+  /** Logs an audit event. */
   async logAudit(input: AuditInput): Promise<Log> {
     return this.createLog({
       userId: input.actorId,
@@ -69,6 +70,7 @@ export class LogsService {
     });
   }
 
+  /** Retrieves logs filtered by the given parameters. */
   async getLogsFiltered(params: {
     actorUsername: string | null;
     action: string | null;
@@ -97,6 +99,7 @@ export class LogsService {
     });
   }
 
+  /** Retrieves logs whose actions start with any of the given prefixes. */
   async getLogsFilteredByActions(prefixes: string[]): Promise<Log[]> {
     const qb = this.logRepository.createQueryBuilder('log');
     qb.where(

@@ -62,17 +62,17 @@ export class UsersController {
         role?: 'staff' | 'registrar' | 'admin';
     },
     ): Promise<PublicUser> {
-    try {
-        const user = await this.usersService.create(
-        userData.username,
-        userData.password,
-        userData.role || 'staff',
-        );
-        const { passwordHash, ...secureUser } = user;
-        return secureUser;
-    } catch {
-        throw new ConflictException('User already exists');
-    }
+        try {
+            const user = await this.usersService.create(
+            userData.username,
+            userData.password,
+            userData.role || 'staff',
+            );
+            const { passwordHash, ...secureUser } = user;
+            return secureUser;
+        } catch {
+            throw new ConflictException('User already exists');
+        }
     }
 
     @Post('login')
@@ -83,11 +83,11 @@ export class UsersController {
     schema: {
         type: 'object',
         properties: {
-        username: { type: 'string', example: 'admin' },
-        password: { type: 'string', example: 'password123' },
+            username: { type: 'string', example: 'admin' },
+            password: { type: 'string', example: 'password123' },
         },
         required: ['username', 'password'],
-    },
+    }
     })
     async login(@Body() body: { username: string; password: string }) {
         const user = await this.authService.validateUser(body.username, body.password);

@@ -1,7 +1,6 @@
 import { Booking } from 'src/bookings/bookings.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique } from 'typeorm';
 
-
 @Entity()
 @Unique(['building', 'roomNumber'])
 export class Room {

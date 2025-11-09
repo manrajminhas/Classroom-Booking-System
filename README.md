@@ -1,3 +1,5 @@
+READMEs specific to Design 2 and Implementation 2 are located in the `docs` folder.  
+
 # Team Members
 
 | V#   | Name     |
@@ -7,27 +9,29 @@
 | V00989485 | Max Patchell |
 | V01012421 | William Shaw |
 
+# Run Project:
+
+To run the project from the root directory, use the following commands:  
+
+```cd src```  
+```docker compose build```  
+```docker compose up```  
+
+The application will then be available at ```localhost:3000```.  
+
+For reference, the backend uses port 3001 and the database uses port 5432.  
 
 # Run Tests:
 
-<p>The following command will allow you to run all created end-to-end tests.</p>
+We use Vitest for testing. To run our project's tests:  
 
-```npm run test```
+```cd src/backend```  
+```npm run test```  
 
-# Run Project:
+To view code coverage, use the following command instead:  
 
-<p>The following series of commands will allow you to run the project:</p>
+```npx vitest run --coverage```  
 
-<p>Traverse into the source directory via:</p>
+# Acceptance Tests
 
-```cd src```
-
-<p>The next command will start the docker build and set up the backend and frontend</p>
-
-```docker compose up --build```
-
-<p>Once this has successfully run you will the following can be found at:</p>
-
-  - Frontend: http://localhost:3000/
-  - Backend: http://localhost:3001/
-  - Database: http://localhost:5432/
+Coming soon

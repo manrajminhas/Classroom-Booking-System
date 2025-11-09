@@ -20,7 +20,6 @@ export class User {
     bookings: Booking[];
 }
 
-
 export class PublicUser {
     userID: number;
     username: string;
