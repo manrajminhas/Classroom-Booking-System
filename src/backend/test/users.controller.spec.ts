@@ -85,14 +85,14 @@ describe('create', () => {
       passwordHash: 'hashed',
     });
 
-    const result = await controller.create({ username: 'newuser', password: 'pw' } as any);
+    const result = await controller.create({ username: 'newuser', password: 'pw' });
     expect(mockUsersService.create).toHaveBeenCalledWith('newuser', 'pw', 'staff');
     expect(result).toEqual({ userID: 3, username: 'newuser' });
   });
 
   it('throws ConflictException if username already exists', async () => {
     mockUsersService.create.mockRejectedValue(new Error('duplicate'));
-    await expect(controller.create({ username: 'dup', password: 'pw' } as any)).rejects.toThrow(
+    await expect(controller.create({ username: 'dup', password: 'pw' } )).rejects.toThrow(
       ConflictException,
     );
     expect(mockUsersService.create).toHaveBeenCalledWith('dup', 'pw', 'staff');

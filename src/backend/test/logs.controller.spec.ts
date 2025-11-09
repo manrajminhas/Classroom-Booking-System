@@ -50,7 +50,7 @@ describe('LogsController', () => {
 
 	it('getRegistrarLogs should call getLogsFilteredByActions with correct prefixes', async () => {
 		const expected = [{ id: 1 }];
-		mockLogsService.getLogsFilteredByActions = vi.fn().mockResolvedValue(expected as any);
+		mockLogsService.getLogsFilteredByActions = vi.fn().mockResolvedValue(expected);
 		const res = await controller.getRegistrarLogs();
 		expect(mockLogsService.getLogsFilteredByActions).toHaveBeenCalledWith(['booking.', 'room.']);
 		expect(res).toEqual(expected);
@@ -58,7 +58,7 @@ describe('LogsController', () => {
 
 	it('getAdminLogs should return all logs', async () => {
 		const expected = [{ id: 5 }];
-		mockLogsService.getAllLogs = vi.fn().mockResolvedValue(expected as any);
+		mockLogsService.getAllLogs = vi.fn().mockResolvedValue(expected);
 		const res = await controller.getAdminLogs();
 		expect(mockLogsService.getAllLogs).toHaveBeenCalledOnce();
 		expect(res).toEqual(expected);
@@ -77,7 +77,7 @@ describe('LogsController', () => {
 			details: 'd',
 		} as any;
 
-		const created = { id: 9 } as any;
+		const created = { id: 9 };
 		mockLogsService.createLog = vi.fn().mockResolvedValue(created);
 
 		const res = await controller.addLog(body);

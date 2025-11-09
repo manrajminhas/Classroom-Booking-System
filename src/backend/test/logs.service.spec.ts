@@ -44,7 +44,7 @@ describe('LogsService', () => {
         details: 'details',
         };
 
-        const result = await logsService.createLog(input as any);
+        const result = await logsService.createLog(input);
         expect(result).toHaveProperty('id');
         expect(result.action).toBe('test.action');
         expect(result.userId).toBe(1);
@@ -71,8 +71,8 @@ describe('LogsService', () => {
     });
 
     it('should return logs in descending order', async () => {
-        const l1 = await logsRepository.save({ action: 'a', userId: 1, createdAt: new Date('2025-01-01') } as any);
-        const l2 = await logsRepository.save({ action: 'b', userId: 2, createdAt: new Date('2025-02-01') } as any);
+        const l1 = await logsRepository.save({ action: 'a', userId: 1, createdAt: new Date('2025-01-01') });
+        const l2 = await logsRepository.save({ action: 'b', userId: 2, createdAt: new Date('2025-02-01') });
 
         const all = await logsService.getAllLogs();
         expect(all[0].id).toBe(l2.id);
@@ -80,9 +80,9 @@ describe('LogsService', () => {
     });
 
     it('should filter by actorUsername, action and date ranges', async () => {
-        await logsRepository.save({ action: 'booking.create', userId: 1, actorUsername: 'x', createdAt: new Date('2025-01-01') } as any);
-        await logsRepository.save({ action: 'room.update', userId: 2, actorUsername: 'y', createdAt: new Date('2025-06-01') } as any);
-        await logsRepository.save({ action: 'booking.delete', userId: 3, actorUsername: 'x', createdAt: new Date('2025-07-01') } as any);
+        await logsRepository.save({ action: 'booking.create', userId: 1, actorUsername: 'x', createdAt: new Date('2025-01-01') });
+        await logsRepository.save({ action: 'room.update', userId: 2, actorUsername: 'y', createdAt: new Date('2025-06-01') });
+        await logsRepository.save({ action: 'booking.delete', userId: 3, actorUsername: 'x', createdAt: new Date('2025-07-01') });
 
         const byActor = await logsService.getLogsFiltered({ actorUsername: 'x', action: null, from: null, to: null });
         expect(byActor).toHaveLength(2);
@@ -102,9 +102,9 @@ describe('LogsService', () => {
     });
 
     it('getLogsFilteredByActions should return logs matching prefixes', async () => {
-        await logsRepository.save({ action: 'booking.create', userId: 1, createdAt: new Date('2025-03-01') } as any);
-        await logsRepository.save({ action: 'booking.delete', userId: 2, createdAt: new Date('2025-04-01') } as any);
-        await logsRepository.save({ action: 'room.update', userId: 3, createdAt: new Date('2025-05-01') } as any);
+        await logsRepository.save({ action: 'booking.create', userId: 1, createdAt: new Date('2025-03-01') });
+        await logsRepository.save({ action: 'booking.delete', userId: 2, createdAt: new Date('2025-04-01') });
+        await logsRepository.save({ action: 'room.update', userId: 3, createdAt: new Date('2025-05-01') });
 
         const res = await logsService.getLogsFilteredByActions(['booking.']);
         expect(res).toHaveLength(2);
