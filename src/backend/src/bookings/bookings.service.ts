@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, MoreThan, Repository, Not, Between } from 'typeorm';
+// UPDATED IMPORTS: Added In, FindOptionsWhere, and MoreThanOrEqual for availability search
+import { LessThan, MoreThan, Repository, Not, Between, In, FindOptionsWhere, MoreThanOrEqual } from 'typeorm'; 
 import { Booking } from './bookings.entity';
 import { Room } from 'src/rooms/rooms.entity';
 
@@ -17,8 +18,7 @@ export class BookingsService {
 
     /**
      * Creates a booking and adds it to the database.
-     * 
-     * @param userID - ID of the user creating the booking
+     * * @param userID - ID of the user creating the booking
      * @param roomID - ID of the room for the booking
      * @param startTime - Start time and date for the booking
      * @param endTime - End time and date for the booking
@@ -77,11 +77,60 @@ export class BookingsService {
         });
         return this.bookingsRepository.save(booking);
     }
+    
+    // 
+    // Method to find rooms available for a specific time slot
+    // 
+
+    /**
+     * Finds all rooms available during a specific time slot, optionally filtering by capacity.
+     * * @param startTime - Start time and date for the availability check
+     * @param endTime - End time and date for the availability check
+     * @param minCapacity - Minimum required room capacity (optional)
+     * @returns List of available rooms
+     */
+    async findAvailableRooms(startTime: Date, endTime: Date, minCapacity?: number): Promise<Room[]> {
+        // 1. Find the IDs of rooms that are currently booked (overlap)
+        const conflictingBookings = await this.bookingsRepository.find({
+            select: { room: { roomID: true } }, // Select only the room ID
+            relations: { room: true },
+            where: {
+                startTime: LessThan(endTime),
+                endTime: MoreThan(startTime)
+            },
+        });
+
+        // 2. Extract unique occupied room IDs
+        const occupiedRoomIDs = conflictingBookings
+            .map(b => b.room.roomID)
+            .filter((id, index, self) => self.indexOf(id) === index); // Unique IDs
+
+        // 3. Prepare Room search conditions
+        const roomWhere: FindOptionsWhere<Room> = {
+            // Filter out all occupied rooms
+            roomID: occupiedRoomIDs.length > 0 ? Not(In(occupiedRoomIDs)) : undefined
+        };
+
+        // Add capacity filter if provided
+        if (minCapacity !== undefined && minCapacity > 0) {
+            roomWhere.capacity = MoreThanOrEqual(minCapacity);
+        }
+        
+        // 4. Find all rooms that meet criteria and are NOT occupied
+        return this.roomsRepository.find({
+            where: roomWhere,
+            order: { building: 'ASC', roomNumber: 'ASC' }
+        });
+    }
+
+    // 
+    // 
+    //
+
 
     /**
      * Finds a booking given its ID.
-     * 
-     * @param bookingID - ID of the booking to find
+     * * @param bookingID - ID of the booking to find
      * @returns - The corresponding booking if found, null otherwise
      */
     async findByID(bookingID: number): Promise<Booking | null> {
@@ -93,8 +142,7 @@ export class BookingsService {
 
     /**
      * Finds all of a user's bookings.
-     * 
-     * @param userID - ID of the user to search bookings for
+     * * @param userID - ID of the user to search bookings for
      * @returns List of the user's bookings
      */
     async findByUser(userID: number): Promise<Booking[]> {
@@ -106,8 +154,7 @@ export class BookingsService {
 
     /**
      * Finds all of a user's future bookings.
-     * 
-     * @param userID - ID of the user to search future bookings for
+     * * @param userID - ID of the user to search future bookings for
      * @returns List of the user's future bookings
      */
     async findFutureForUser(userID: number): Promise<Booking[]> {
@@ -123,8 +170,7 @@ export class BookingsService {
 
     /**
      * Finds all of a user's past bookings.
-     * 
-     * @param userID - ID of the user to search past bookings for
+     * * @param userID - ID of the user to search past bookings for
      * @returns List of the user's past bookings
      */
     async findPastForUser(userID: number): Promise<Booking[]> {
@@ -140,8 +186,7 @@ export class BookingsService {
 
     /**
      * Finds all of a room's bookings.
-     * 
-     * @param roomID - ID of the room to search bookings for
+     * * @param roomID - ID of the room to search bookings for
      * @returns List of the room's bookings
      */
     async findByRoom(roomID: number): Promise<Booking[]> {
@@ -155,8 +200,7 @@ export class BookingsService {
 
     /**
      * Finds all of the bookings on a given date.
-     * 
-     * @param date - Date to search bookings for
+     * * @param date - Date to search bookings for
      * @returns List of the date's bookings
      */
     async findByDate(date: Date): Promise<Booking[]> {
@@ -176,8 +220,7 @@ export class BookingsService {
 
     /**
      * Finds all bookings in the database.
-     * 
-     * @returns List of all bookings
+     * * @returns List of all bookings
      */
     async findAll(): Promise<Booking[]> {
         return await this.bookingsRepository.find({
@@ -188,8 +231,7 @@ export class BookingsService {
 
     /**
      * Deletes a booking from the database.
-     * 
-     * @param bookingID - ID of the booking to delete 
+     * * @param bookingID - ID of the booking to delete 
      * @returns - true if the booking was deleted, false otherwise
      */
     async delete(bookingID: number): Promise<boolean> {
