@@ -122,5 +122,17 @@ describe('UsersService', () => {
     });
 
     describe('delete', () => {
+        it('should delete an existing user and return true', async () => {
+            const saved = await usersRepository.save({ username: 'todelete', passwordHash: 'h' });
+            const res = await usersService.delete(saved.userID);
+            expect(res).toBeTruthy();
+            const after = await usersService.findByID(saved.userID);
+            expect(after).toBeNull();
+        });
+
+        it('should return false when deleting a non-existent user', async () => {
+            const res = await usersService.delete(9999);
+            expect(res).toBe(false);
+        });
     });
 });

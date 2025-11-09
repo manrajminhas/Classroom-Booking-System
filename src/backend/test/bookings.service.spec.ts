@@ -47,8 +47,8 @@ describe('RoomsService', () => {
 
     describe('create', () => {
         it('should create a booking given valid user, room, date, and attendees', async () => {
-            const start = new Date('2025-10-21T12:00:00');
-            const end = new Date('2025-10-21T13:20:00');
+            const start = new Date('2026-10-21T12:00:00');
+            const end = new Date('2026-10-21T13:20:00');
 
             const booking = await bookingsService.create(1, 1, start, end, 50);
 
@@ -61,22 +61,22 @@ describe('RoomsService', () => {
         });
 
         it('should not create a booking if attendees > room capacity', async () => {
-            const start = new Date('2025-10-21T12:00:00');
-            const end = new Date('2025-10-21T13:20:00');
+            const start = new Date('2026-10-21T12:00:00');
+            const end = new Date('2026-10-21T13:20:00');
         
             await expect(bookingsService.create(1, 1, start, end, 1000)).rejects.toThrow(BadRequestException);
         });
 
         it('should not creating a booking if attendees < 1', async () => {
-            const start = new Date('2025-10-21T12:00:00');
-            const end = new Date('2025-10-21T13:20:00');
+            const start = new Date('2026-10-21T12:00:00');
+            const end = new Date('2026-10-21T13:20:00');
 
             await expect(bookingsService.create(1, 1, start, end, 0)).rejects.toThrow(BadRequestException);
         });
 
-        it('should not creating a booking if end time < start time', async () => {
-            const start = new Date('2025-10-21T12:00:00');
-            const end = new Date('2025-10-21T11:00:00');
+        it('should not creating a booking if start time is after end time', async () => {
+            const start = new Date('2026-10-21T12:00:00');
+            const end = new Date('2026-10-21T11:00:00');
 
             await expect(bookingsService.create(1, 1, start, end, 50)).rejects.toThrow(BadRequestException);
         });
@@ -89,33 +89,33 @@ describe('RoomsService', () => {
         });
 
         it('should not create a booking if room does not exist', async () => {
-            const start = new Date('2025-10-21T12:00:00');
-            const end = new Date('2025-10-21T13:20:00');
+            const start = new Date('2026-10-21T12:00:00');
+            const end = new Date('2026-10-21T13:20:00');
             
             await expect(bookingsService.create(1, 0, start, end, 25)).rejects.toThrow(NotFoundException);
         });
 
         it('should not create a booking if one already exists for the same room at the same time', async () => {
-            const start1 = new Date('2025-10-21T12:00:00');
-            const end1 = new Date('2025-10-21T15:00:00');
+            const start1 = new Date('2026-10-21T12:00:00');
+            const end1 = new Date('2026-10-21T15:00:00');
             
             const booking1 = await bookingsService.create(1, 1, start1, end1, 55);
             expect(booking1).toBeDefined();
 
             await usersRepository.save({ userID: 2, username: 'otherUser', passwordHash: '123abc' });
 
-            const start2 = new Date('2025-10-21T13:00:00')
-            const end2 = new Date('2025-10-21T13:50:00')       
+            const start2 = new Date('2026-10-21T13:00:00')
+            const end2 = new Date('2026-10-21T13:50:00')       
             
             await expect(bookingsService.create(2, 1, start2, end2, 20)).rejects.toThrow(ConflictException);
         });
 
         it('should not allow double bookings', async () => {
-            const start1 = new Date('2025-10-21T12:00:00')
-            const end1 = new Date('2025-10-21T15:00:00')  
+            const start1 = new Date('2026-10-21T12:00:00')
+            const end1 = new Date('2026-10-21T15:00:00')  
 
-            const start2 = new Date('2025-10-21T12:00:00')
-            const end2 = new Date('2025-10-21T15:00:00') 
+            const start2 = new Date('2026-10-21T12:00:00')
+            const end2 = new Date('2026-10-21T15:00:00') 
 
             await usersRepository.save({ userID: 2, username: 'otherUser', passwordHash: '123abc' });
 
@@ -126,11 +126,11 @@ describe('RoomsService', () => {
         });
 
         it('should allow multiple bookings from the same user', async () => {
-            const start1 = new Date('2025-10-21T12:00:00')
-            const end1 = new Date('2025-10-21T15:00:00')  
+            const start1 = new Date('2026-10-21T12:00:00')
+            const end1 = new Date('2026-10-21T15:00:00')  
 
-            const start2 = new Date('2025-10-25T09:00:00')
-            const end2 = new Date('2025-10-25T09:50:00') 
+            const start2 = new Date('2026-10-25T09:00:00')
+            const end2 = new Date('2026-10-25T09:50:00') 
 
             await roomsRepository.save({ building: 'COR', roomNumber: '312', capacity: 25, avEquipment: '1 document camera; 2 digital video projectors; Wireless mic' });
 
@@ -146,11 +146,11 @@ describe('RoomsService', () => {
         });
 
         it('should allow multiple bookings for the same room at different times', async () => {
-            const start1 = new Date('2025-10-21T12:00:00')
-            const end1 = new Date('2025-10-21T15:00:00')  
+            const start1 = new Date('2026-10-21T12:00:00')
+            const end1 = new Date('2026-10-21T15:00:00')  
 
-            const start2 = new Date('2025-10-25T09:00:00')
-            const end2 = new Date('2025-10-25T09:50:00') 
+            const start2 = new Date('2026-10-25T09:00:00')
+            const end2 = new Date('2026-10-25T09:50:00') 
 
             const booking1 = await bookingsService.create(1, 1, start1, end1, 55);
             expect(booking1).toBeDefined();
@@ -318,12 +318,12 @@ describe('RoomsService', () => {
 
     describe('findFutureForUser', () => {
         it('should return all of a user\'s future bookings', async () => {
-            const start1 = new Date('2025-10-21T12:00:00');
-            const end1 = new Date('2025-10-21T13:20:00');
-            const start2 = new Date('2025-10-22T12:00:00');
-            const end2 = new Date('2025-10-22T13:20:00');
-            const start3 = new Date('2025-10-23T12:00:00');
-            const end3 = new Date('2025-10-23T13:20:00');
+            const start1 = new Date('2026-10-21T12:00:00');
+            const end1 = new Date('2026-10-21T13:20:00');
+            const start2 = new Date('2026-10-22T12:00:00');
+            const end2 = new Date('2026-10-22T13:20:00');
+            const start3 = new Date('2026-10-23T12:00:00');
+            const end3 = new Date('2026-10-23T13:20:00');
 
             const booking1 = await bookingsRepository.save({
                 user,
@@ -357,10 +357,10 @@ describe('RoomsService', () => {
         it('should not return any of a user\'s past bookings', async () => {
             const start1 = new Date('2025-09-21T12:00:00');
             const end1 = new Date('2025-09-21T13:20:00');
-            const start2 = new Date('2025-10-22T12:00:00');
-            const end2 = new Date('2025-10-22T13:20:00');
-            const start3 = new Date('2025-10-23T12:00:00');
-            const end3 = new Date('2025-10-23T13:20:00');
+            const start2 = new Date('2026-10-22T12:00:00');
+            const end2 = new Date('2026-10-22T13:20:00');
+            const start3 = new Date('2026-10-23T12:00:00');
+            const end3 = new Date('2026-10-23T13:20:00');
 
             const booking1 = await bookingsRepository.save({
                 user,

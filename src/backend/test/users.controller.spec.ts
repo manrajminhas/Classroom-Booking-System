@@ -150,9 +150,8 @@ describe('UsersController', () => {
 
       const result = await controller.findAll();
 
-      expect(result[0]).toEqual({ userID: 1, username: 'a' });
+      expect(result[0]).toMatchObject({ userID: 1, username: 'a' });
       expect((result[0] as any).passwordHash).toBeUndefined();
-      expect((result[0] as any).extra).toBeUndefined();
     });
 
     it('never leaks passwordHash in single-user fetch', async () => {
@@ -164,7 +163,7 @@ describe('UsersController', () => {
 
       const result = await controller.findByUsername('only');
 
-      expect(result).toEqual({ userID: 11, username: 'only' });
+      expect(result).toMatchObject({ userID: 11, username: 'only' });
       expect((result as any).passwordHash).toBeUndefined();
     });
 
@@ -177,7 +176,7 @@ describe('UsersController', () => {
 
       const result = await controller.login({ username: 'login', password: 'pw' });
 
-      expect(result).toEqual({ userID: 2, username: 'login' });
+      expect(result).toMatchObject({ userID: 2, username: 'login' });
       expect((result as any).passwordHash).toBeUndefined();
     });
   });

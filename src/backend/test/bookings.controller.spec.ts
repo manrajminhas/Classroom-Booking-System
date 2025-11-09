@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import 'reflect-metadata';
 import { BookingsController } from 'src/bookings/bookings.controller';
 import { BookingsService } from 'src/bookings/bookings.service';
@@ -31,10 +31,17 @@ describe('BookingsController', () => {
         findByUsername: vi.fn()
     }
 
+    const mockLogsService = { logAudit: vi.fn() };
+
     beforeEach(async () => {
         service = mockBookingsService as unknown as BookingsService;
-        controller = new BookingsController(service, mockUsersService as unknown as UsersService,
-            mockRoomsService as unknown as RoomsService);
+        controller = new BookingsController(
+            service,
+            mockUsersService as unknown as UsersService,
+            mockRoomsService as unknown as RoomsService,
+            mockLogsService as any
+        );
+        (controller as any).logsService = mockLogsService;
     });
 
    afterEach(() => {
@@ -72,20 +79,24 @@ describe('BookingsController', () => {
    });
 
     describe('create', () => {
-       it('should successfully create and return a booking', async () => {
-            const booking = { id: 1, roomID: 1, userID: 1, startTime: new Date(), endTime: new Date(), attendees: 10 };
+        it('should successfully create and return a booking', async () => {
+            const startISO = new Date().toISOString();
+            const endISO = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+            const booking = { bookingID: 1, room: { roomID: 1, building: 'ECS', roomNumber: '101' }, user: { userID: 1, username: 'a' }, startTime: new Date(startISO), endTime: new Date(endISO), attendees: 10 };
 
             mockBookingsService.create.mockResolvedValue(booking);
-            mockRoomsService.findByLocation.mockResolvedValue(1);
+            mockUsersService.findByUsername.mockResolvedValue({ userID: 1, username: 'a' });
+            mockRoomsService.findByLocation.mockResolvedValue({ roomID: 1, building: 'ECS', roomNumber: '101' });
 
-            const result = await controller.create('ECS', '101', new Date().toISOString(), new Date().toISOString(), 10);
+            const result = await controller.create('ECS', '101', new Date().toISOString(), new Date().toISOString(), 10, 'a');
             expect(result).toEqual(booking);
        }); 
 
        it('should throw NotFoundException if room does not exist', async () => {
+            mockUsersService.findByUsername.mockResolvedValue({ userID: 1, username: 'a' });
             mockRoomsService.findByLocation.mockResolvedValue(null);
- 
-            await expect(controller.create('ECS', '101', new Date().toISOString(), new Date().toISOString(), 5))
+
+            await expect(controller.create('ECS', '101', new Date().toISOString(), new Date().toISOString(), 5, 'a'))
                 .rejects.toThrow(NotFoundException);
        });
     });
@@ -97,7 +108,7 @@ describe('BookingsController', () => {
                 { id: 2, roomID: 2, userID: 1, startTime: new Date(), endTime: new Date(), attendees: 15 }
             ];
 
-            mockUsersService.findByUsername.mockResolvedValue(1);
+            mockUsersService.findByUsername.mockResolvedValue({ userID: 1, username: 'abc' });
             mockBookingsService.findByUser.mockResolvedValue(bookings);
 
             const result = await controller.findByUser('abc');

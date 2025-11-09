@@ -22,9 +22,12 @@ describe('RoomsController', () => {
 
     beforeEach(async () => {
         service = new RoomsService(null as any); // Passing null because we will mock the methods
-        controller = new RoomsController(service);
+
+        const mockLogsService = { logAudit: vi.fn() };
+        controller = new RoomsController(service as unknown as RoomsService, mockLogsService as any);
 
         Object.assign(service, mockRoomsService); // Override service methods with mocks
+        (controller as any).logsService = mockLogsService;
     });
 
     afterEach(() => {
