@@ -107,23 +107,46 @@ export class BookingsController {
     }
 
     @Delete(':bookingID')
-    async deleteBooking(@Param('bookingID') bookingID: string): Promise<{ message: string }> {
-        const id = Number(bookingID);
-        const deleted = await this.bookingsService.delete(id);
-        if (!deleted) {
-            throw new NotFoundException('Booking not found');
+    @ApiOperation({ summary: 'Delete a specific booking' })
+    @ApiResponse({ status: 200, description: 'Booking deleted successfully' })
+    @ApiResponse({ status: 404, description: 'Booking not found' })
+    @ApiBody({ description: 'Optional username of the actor performing the deletion' })
+    async deleteBooking(
+    @Param('bookingID') bookingID: string,
+    @Body('username') username?: string
+    ): Promise<{ message: string }> {
+    const id = Number(bookingID);
+    const deleted = await this.bookingsService.delete(id);
+
+    if (!deleted) {
+        throw new NotFoundException('Booking not found');
+    }
+
+    let actorName = 'system';
+    let actorId = 1;
+    if (username) {
+        const user = await this.usersService.findByUsername(username);
+        if (user) {
+        actorName = user.username;
+        actorId = user.userID;
+        } else if (username === 'registrar') {
+        actorName = 'registrar';
+        actorId = 0;
         }
-        await this.logsService.logAudit({
-            actorId: 1,
-            actorName: 'system',
-            action: 'booking.delete',
-            targetType: 'booking',
-            targetId: String(id),
-            before: {},
-            after: {},
-            details: `Deleted booking ${id}`,
-        });
-        return { message: 'Booking deleted successfully' };
+    }
+
+    await this.logsService.logAudit({
+        actorId,
+        actorName,
+        action: 'booking.delete',
+        targetType: 'booking',
+        targetId: String(id),
+        before: {},
+        after: {},
+        details: `Deleted booking ${id}`,
+    });
+
+    return { message: 'Booking deleted successfully' };
     }
 
     @Get('date/:date')

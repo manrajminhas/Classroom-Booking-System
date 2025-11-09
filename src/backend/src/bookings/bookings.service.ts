@@ -180,7 +180,10 @@ export class BookingsService {
      * @returns List of all bookings
      */
     async findAll(): Promise<Booking[]> {
-        return await this.bookingsRepository.find();
+        return await this.bookingsRepository.find({
+        relations: ['room', 'user'],
+        order: { startTime: 'ASC' },
+        });
     }
 
     /**

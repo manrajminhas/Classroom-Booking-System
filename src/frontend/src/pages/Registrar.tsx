@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
+import {BarChart,Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,} from "recharts";
 
-type Room = {
+interface Room {
   roomID: number;
   building: string;
   roomNumber: string;
   capacity: number;
-};
+}
 
-type Log = {
+interface Booking {
+  bookingID: number;
+  startTime: string;
+  endTime: string;
+  attendees: number;
+  user: { username: string };
+  room: { building: string; roomNumber: string };
+}
+
+interface Log {
   id: number;
   action: string;
   actorUsername: string | null;
@@ -15,7 +25,11 @@ type Log = {
   targetId: string | null;
   createdAt: string;
   details: string | null;
-};
+  after?: {
+    startTime?: string;
+    endTime?: string;
+  };
+}
 
 const API = "http://localhost:3001";
 
@@ -26,10 +40,14 @@ const Registrar: React.FC = () => {
   const [capacity, setCapacity] = useState<number>(12);
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [logs, setLogs] = useState<Log[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   useEffect(() => {
     loadRooms();
     loadLogs();
+    loadBookings();
   }, []);
 
   const loadRooms = () => {
@@ -51,12 +69,18 @@ const Registrar: React.FC = () => {
       .then((data: Log[]) => {
         const filtered = data.filter(
           (log) =>
-            log.action.startsWith("room.") ||
-            log.action.startsWith("booking.")
+            log.action.startsWith("room.") || log.action.startsWith("booking.")
         );
         setLogs(filtered.slice(0, 10));
       })
       .catch((err) => console.error("Error loading logs:", err));
+  };
+
+  const loadBookings = () => {
+    fetch(`${API}/bookings`)
+      .then((res) => res.json())
+      .then((data: Booking[]) => setBookings(data))
+      .catch((err) => console.error("Error loading bookings:", err));
   };
 
   const addRoom = async () => {
@@ -118,79 +142,344 @@ const Registrar: React.FC = () => {
     }
   };
 
-  return (
-    <div style={{ padding: 16 }}>
-      <h2>Registrar Panel</h2>
+  const handleUploadCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      <section style={{ marginBottom: 24 }}>
-        <h4>Add Room</h4>
-        <input
-          placeholder="Building"
-          value={building}
-          onChange={(e) => setBuilding(e.target.value)}
-          style={{ marginRight: 8 }}
-        />
-        <input
-          placeholder="Room Number"
-          value={roomNumber}
-          onChange={(e) => setRoomNumber(e.target.value)}
-          style={{ marginRight: 8 }}
-        />
-        <input
-          type="number"
-          value={capacity}
-          onChange={(e) => setCapacity(parseInt(e.target.value) || 0)}
-          style={{ marginRight: 8, width: 80 }}
-        />
-        <button onClick={addRoom}>Add Room</button>
+    setUploading(true);
+    setUploadMessage("");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(`${API}/rooms/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to upload CSV");
+      }
+
+      const result = await res.json().catch(() => ({}));
+      const count =
+        result?.count || (Array.isArray(result) ? result.length : undefined);
+      setUploadMessage(
+        count
+          ? `Uploaded ${count} rooms successfully.`
+          : "Upload successful."
+      );
+      loadRooms();
+      loadLogs();
+    } catch (err: any) {
+      console.error(err);
+      setUploadMessage(`Error: ${err.message}`);
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const cancelBooking = async (bookingID: number) => {
+  if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const username = user.username;
+
+  try {
+    const res = await fetch(`${API}/bookings/${bookingID}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to delete booking");
+    }
+
+    alert("Booking cancelled!");
+    loadBookings();
+    loadLogs();
+  } catch (err: any) {
+    alert(`Error cancelling booking: ${err.message}`);
+  }
+};
+
+  const formatDateTime = (t?: string) => {
+    if (!t) return "—";
+    const date = new Date(t);
+    return date.toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const roomCounts = bookings.reduce<Record<string, number>>((acc, b) => {
+    if (!b.room) return acc;
+    const key = `${b.room.building} ${b.room.roomNumber}`;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topRooms = Object.entries(roomCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return (
+    <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
+      <h1>Registrar Panel</h1>
+
+      <section
+        style={{
+          background: "#f9f9f9",
+          borderRadius: "8px",
+          padding: "1rem",
+          marginBottom: "2rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2>Room Management</h2>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <h4>Add Room</h4>
+          <input
+            placeholder="Building"
+            value={building}
+            onChange={(e) => setBuilding(e.target.value)}
+            style={{ marginRight: 8, padding: 6 }}
+          />
+          <input
+            placeholder="Room Number"
+            value={roomNumber}
+            onChange={(e) => setRoomNumber(e.target.value)}
+            style={{ marginRight: 8, padding: 6 }}
+          />
+          <input
+            type="number"
+            value={capacity}
+            onChange={(e) => setCapacity(parseInt(e.target.value) || 0)}
+            style={{ marginRight: 8, padding: 6, width: 100 }}
+          />
+          <button
+            onClick={addRoom}
+            style={{
+              background: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              padding: "6px 12px",
+              cursor: "pointer",
+            }}
+          >
+            Add Room
+          </button>
+        </div>
+
+        <div style={{ marginBottom: "1.5rem" }}>
+          <h4>Delete Room</h4>
+          <select
+            value={selectedKey}
+            onChange={(e) => setSelectedKey(e.target.value)}
+            style={{ marginRight: 8, padding: 6 }}
+          >
+            {rooms.map((r) => (
+              <option
+                key={`${r.building}|${r.roomNumber}`}
+                value={`${r.building}|${r.roomNumber}`}
+              >
+                {`${r.building} ${r.roomNumber} — Capacity: ${r.capacity}`}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={deleteRoom}
+            style={{
+              background: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              padding: "6px 12px",
+              cursor: "pointer",
+            }}
+          >
+            Delete
+          </button>
+        </div>
+
+        <div>
+          <h4>Upload Room CSV</h4>
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleUploadCSV}
+            disabled={uploading}
+            style={{ marginRight: 8, padding: 6 }}
+          />
+          {uploading && <span>Uploading...</span>}
+          {uploadMessage && (
+            <p
+              style={{
+                marginTop: 8,
+                color: uploadMessage.startsWith("Uploaded")
+                  ? "green"
+                  : "red",
+              }}
+            >
+              {uploadMessage}
+            </p>
+          )}
+        </div>
       </section>
 
-      <section style={{ marginBottom: 24 }}>
-        <h4>Delete Room</h4>
-        <select
-          value={selectedKey}
-          onChange={(e) => setSelectedKey(e.target.value)}
-          style={{ marginRight: 8 }}
-        >
-          {rooms.map((r) => (
-            <option
-              key={`${r.building}|${r.roomNumber}`}
-              value={`${r.building}|${r.roomNumber}`}
+      <section
+        style={{
+          background: "#f9f9f9",
+          borderRadius: "8px",
+          padding: "1rem",
+          marginBottom: "2rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2>Top 5 Most Booked Rooms</h2>
+        {topRooms.length === 0 ? (
+          <p style={{ color: "#888" }}>No booking data available</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={topRooms}
+              margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
             >
-              {`${r.building} ${r.roomNumber} — Capacity: ${r.capacity}`}
-            </option>
-          ))}
-        </select>
-        <button onClick={deleteRoom}>Delete</button>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#007bff" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </section>
+
+      <section
+        style={{
+          background: "#f9f9f9",
+          borderRadius: "8px",
+          padding: "1rem",
+          marginBottom: "2rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2>All Bookings</h2>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "1rem",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#efefef", textAlign: "left" }}>
+              <th style={{ padding: "8px" }}>Building</th>
+              <th style={{ padding: "8px" }}>Room</th>
+              <th style={{ padding: "8px" }}>Start</th>
+              <th style={{ padding: "8px" }}>End</th>
+              <th style={{ padding: "8px" }}>Attendees</th>
+              <th style={{ padding: "8px" }}>Booked By</th>
+              <th style={{ padding: "8px" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: "center", color: "#888" }}>
+                  No current bookings
+                </td>
+              </tr>
+            ) : (
+              bookings.map((b) => (
+                <tr key={b.bookingID} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td style={{ padding: "8px" }}>{b.room?.building}</td>
+                  <td style={{ padding: "8px" }}>{b.room?.roomNumber}</td>
+                  <td style={{ padding: "8px" }}>{formatDateTime(b.startTime)}</td>
+                  <td style={{ padding: "8px" }}>{formatDateTime(b.endTime)}</td>
+                  <td style={{ padding: "8px" }}>{b.attendees}</td>
+                  <td style={{ padding: "8px" }}>
+                    {b.user?.username || "Unknown"}
+                  </td>
+                  <td style={{ padding: "8px" }}>
+                    <button
+                      onClick={() => cancelBooking(b.bookingID)}
+                      style={{
+                        background: "#dc3545",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 4,
+                        padding: "4px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </section>
 
       <section>
-        <h4>Recent Activity</h4>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <h2>Recent Activity</h2>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "1rem",
+          }}
+        >
           <thead>
-            <tr>
-              <th>Time</th>
-              <th>Actor</th>
-              <th>Action</th>
-              <th>Target</th>
-              <th>Details</th>
+            <tr style={{ backgroundColor: "#efefef", textAlign: "left" }}>
+              <th style={{ padding: "8px" }}>Time (Log)</th>
+              <th style={{ padding: "8px" }}>Actor</th>
+              <th style={{ padding: "8px" }}>Action</th>
+              <th style={{ padding: "8px" }}>Target</th>
+              <th style={{ padding: "8px" }}>Start Time</th>
+              <th style={{ padding: "8px" }}>End Time</th>
+              <th style={{ padding: "8px" }}>Details</th>
             </tr>
           </thead>
           <tbody>
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", color: "gray" }}>
+                <td colSpan={7} style={{ textAlign: "center", color: "#888" }}>
                   No recent activity
                 </td>
               </tr>
             ) : (
               logs.map((log) => (
-                <tr key={log.id}>
-                  <td>{new Date(log.createdAt).toLocaleString()}</td>
-                  <td>{log.actorUsername || "System"}</td>
-                  <td>{log.action}</td>
-                  <td>{log.targetType} {log.targetId}</td>
-                  <td>{log.details || "-"}</td>
+                <tr key={log.id} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td style={{ padding: "8px" }}>
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
+                  <td style={{ padding: "8px" }}>
+                    {log.actorUsername || "System"}
+                  </td>
+                  <td style={{ padding: "8px" }}>{log.action}</td>
+                  <td style={{ padding: "8px" }}>
+                    {log.targetType} {log.targetId}
+                  </td>
+                  <td style={{ padding: "8px" }}>
+                    {formatDateTime(log.after?.startTime)}
+                  </td>
+                  <td style={{ padding: "8px" }}>
+                    {formatDateTime(log.after?.endTime)}
+                  </td>
+                  <td style={{ padding: "8px" }}>{log.details || "-"}</td>
                 </tr>
               ))
             )}
