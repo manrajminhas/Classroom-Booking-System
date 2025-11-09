@@ -81,29 +81,38 @@ const ClassRoomSearchPage: React.FC = () => {
   };
 
   const handleReserveRoom = async () => {
-    if (!selectedClassroom || !selectedStartTime || !selectedEndTime) {
-      alert("Please select a classroom and times before booking!");
-      return;
-    }
+  if (!selectedClassroom || !selectedStartTime || !selectedEndTime) {
+    alert("Please select a classroom and times before booking!");
+    return;
+  }
 
-    const [building, roomNumber] = selectedClassroom.split("_");
+  const [building, roomNumber] = selectedClassroom.split("_");
 
-    try {
-      await axios.post(
-        `${API}/bookings/${encodeURIComponent(building)}/${encodeURIComponent(roomNumber)}`,
-        {
-          startTime: formatTime(selectedStartTime),
-          endTime: formatTime(selectedEndTime),
-          attendees: 1
-        }
-      );
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!currentUser?.username) {
+    alert("You must be logged in to book a room!");
+    return;
+  }
 
-      alert("Booking created successfully!");
-    } catch (err: any) {
-      console.error(err);
-      alert(err.response?.data?.message || "Failed to create booking");
-    }
-  };
+  console.log("Submitting booking as:", currentUser.username);
+
+  try {
+    await axios.post(
+      `${API}/bookings/${encodeURIComponent(building)}/${encodeURIComponent(roomNumber)}`,
+      {
+        startTime: formatTime(selectedStartTime),
+        endTime: formatTime(selectedEndTime),
+        attendees: 1,
+        username: currentUser.username,
+      }
+    );
+
+    alert("Booking created successfully!");
+  } catch (err: any) {
+    console.error(err);
+    alert(err.response?.data?.message || "Failed to create booking");
+  }
+};
 
   function sortRooms(a: Room, b: Room) {
     const ab = a.building.localeCompare(b.building);
