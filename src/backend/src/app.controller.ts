@@ -21,17 +21,4 @@ export class AppController {
       timestamp: new Date(),
     };
   }
-
-  @Get('protected')
-  @UseGuards(JwtAuthGuard)
-  getProtected() {
-    return { ok: true, area: 'protected' };
-  }
-
-  @Get('admin-test')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  getAdminOnly() {
-    return { ok: true, area: 'admin-only' };
-  }
 }
