@@ -50,7 +50,10 @@ const ClassRoomSearchPage: React.FC = () => {
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
   const [minCapacity, setMinCapacity] = useState<number>(1);
-  const [buildingFilter, setBuildingFilter] = useState<string>(''); // NEW: Building filter state
+  const [buildingFilter, setBuildingFilter] = useState<string>('');
+  
+  // NEW STATE: Field for actual number of attendees
+  const [attendees, setAttendees] = useState<number>(1); 
 
   // Results & Selection
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
@@ -61,7 +64,7 @@ const ClassRoomSearchPage: React.FC = () => {
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedDate(event.target.value);
-    setBuildingFilter(''); // Reset building filter on date change
+    setBuildingFilter('');
   };
 
   const handleStartTimeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -73,10 +76,16 @@ const ClassRoomSearchPage: React.FC = () => {
     setSelectedEndTime(event.target.value);
     setBuildingFilter('');
   };
-
-  const handleCapacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  
+  // Handler for Minimum Capacity filter (used for search)
+  const handleMinCapacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMinCapacity(parseInt(event.target.value) || 1);
     setBuildingFilter('');
+  };
+  
+  // NEW HANDLER: For the actual number of attendees for the booking
+  const handleAttendeesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAttendees(parseInt(event.target.value) || 1);
   };
   
   const handleBuildingFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -87,7 +96,7 @@ const ClassRoomSearchPage: React.FC = () => {
     setSelectedRoomKey(event.target.value);
   };
 
-  // --- New Search Function ---
+  // --- Search Function (Unchanged, uses minCapacity) ---
 
   const handleSearch = async () => {
     if (!selectedDate || !selectedStartTime || !selectedEndTime) {
@@ -96,27 +105,26 @@ const ClassRoomSearchPage: React.FC = () => {
       return;
     }
     
-    setAvailableRooms([]); // Clear previous results
+    setAvailableRooms([]); 
     setSelectedRoomKey('');
     setSearchMessage('Searching...');
-    setBuildingFilter(''); // Always reset building filter before a new API search
+    setBuildingFilter(''); 
 
     const startTimeISO = formatDateTimeISO(selectedDate, selectedStartTime);
     const endTimeISO = formatDateTimeISO(selectedDate, selectedEndTime);
     
-    // Client-side time validation
     if (!startTimeISO || !endTimeISO || startTimeISO >= endTimeISO) {
       setSearchMessage("Invalid time range selected.");
       return;
     }
 
     try {
-      // Calls the new backend availability endpoint
       const res = await axios.get(`${API}/bookings/available`, {
         params: {
           start: startTimeISO,
           end: endTimeISO,
-          capacity: minCapacity > 1 ? minCapacity : undefined,
+          // Use minCapacity for the search query filter
+          capacity: minCapacity > 1 ? minCapacity : undefined, 
         }
       });
       
@@ -124,7 +132,6 @@ const ClassRoomSearchPage: React.FC = () => {
       setAvailableRooms(results);
 
       if (results.length > 0) {
-        // Automatically select the first room for booking
         setSelectedRoomKey(`${results[0].building}_${results[0].roomNumber}`);
         setSearchMessage(`Found ${results.length} available room(s). Select one to book.`);
       } else {
@@ -143,6 +150,10 @@ const ClassRoomSearchPage: React.FC = () => {
     if (!selectedRoomKey) {
       alert("Please select an available room from the search results first!");
       return;
+    }
+    if (attendees < 1) {
+        alert("Number of attendees must be at least 1.");
+        return;
     }
 
     const [building, roomNumber] = selectedRoomKey.split("_");
@@ -167,13 +178,12 @@ const ClassRoomSearchPage: React.FC = () => {
         {
           startTime: startTimeISO,
           endTime: endTimeISO,
-          attendees: 1, 
+          attendees: attendees, // UPDATED: Use the state variable
           username: currentUser.username,
         }
       );
 
       alert(`Booking created successfully for ${building} ${roomNumber}!`);
-      // Re-run search after successful booking to update availability
       handleSearch(); 
     } catch (err: any) {
       console.error(err);
@@ -217,17 +227,30 @@ const ClassRoomSearchPage: React.FC = () => {
           </label>
         </div>
 
-        <div style={{ marginTop: '10px' }}>
+        <div style={{ marginTop: '10px', display: 'flex', gap: '20px' }}>
            <label>
-            Min Capacity:
+            Min Capacity (Search Filter):
             <input
               type="number"
               min="1"
               value={minCapacity}
-              onChange={handleCapacityChange}
+              onChange={handleMinCapacityChange}
               style={{ marginRight: 20, padding: 6, width: 60 }}
             />
           </label>
+          
+           {/* NEW ATTENDEE INPUT */}
+           <label>
+            Number of Attendees (for Booking):
+            <input
+              type="number"
+              min="1"
+              value={attendees}
+              onChange={handleAttendeesChange}
+              style={{ padding: 6, width: 60 }}
+            />
+          </label>
+          {/* END NEW ATTENDEE INPUT */}
         </div>
 
         <button 
@@ -250,7 +273,6 @@ const ClassRoomSearchPage: React.FC = () => {
         <h3>2. Available Rooms</h3>
         <p style={{ fontStyle: 'italic' }}>{searchMessage}</p>
 
-        {/* NEW: Building Filter is applied only after rooms are fetched */}
         {availableRooms.length > 0 && (
             <div style={{ marginBottom: '10px' }}>
                 <label>
