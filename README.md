@@ -43,7 +43,10 @@ To view code coverage, use the following command instead:
 
 All relevant source and controller files have more than 75% branch coverage.  
 
-To run our frontend tests:
+To run our frontend tests:  
+
+```cd src/frontend``` 
+
 
 # Acceptance Tests:
 
@@ -63,6 +66,7 @@ Our acceptance tests are mapped to requirements described in Cycles 1 and 2.
 - Given at least one booking has been created, when the registrar navigates to the 'Registrar' page, then they are able to see the most popular rooms in graphical form.
 - Given at least one booking has been created, when the registrar navigates to the 'Registrar' page and clicks 'Cancel' next to a booking in the 'All Bookings' table, then the booking is cancelled and the room can be booked by another user.
 - Given at least one booking has been created, when the registrar navigates to the 'Registrar' page, then they are able to see a log entry for the activity in the 'Recent Activity' table.
+- Given at least one booking has been created where the number of attendees is less than half the room's capacity, when the registrar navigates to the 'Registrar' page, then the booking appears in red in the 'All Bookings' table.
 
 - Given an admin is logged in, when they click on the 'Admin' menu bar item, then they are able to see an overview of the system status, including uptime.
 - Given at least one booking has been created, when the admin navigates to the 'Admin' page, then they are able to see a log entry for the activity in the 'Audit Log' table.
@@ -86,6 +90,10 @@ From there, all tools should be usable as expected.
 # API Endpoints:
 
 API endpoints are exposed through individual controllers in the backend, allowing external code to interact with the service. Each controller (bookings, rooms, users, etc.) provides routes that can be called to perform operations.
+
+# CI:
+
+A specific `.gitlab-ci.yml` for our project is located in the project's root, although it is not currently functional.  
 
 # Further Documentation:
 

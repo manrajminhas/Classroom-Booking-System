@@ -14,7 +14,7 @@ interface Booking {
   endTime: string;
   attendees: number;
   user: { username: string };
-  room: { building: string; roomNumber: string };
+  room: { building: string; roomNumber: string; capacity: number };
 }
 
 interface Log {
@@ -516,7 +516,7 @@ const Registrar: React.FC = () => {
               <th style={{ padding: "8px" }}>Room</th>
               <th style={{ padding: "8px" }}>Start</th>
               <th style={{ padding: "8px" }}>End</th>
-              <th style={{ padding: "8px" }}>Attendees</th>
+              <th style={{ padding: "8px" }}>Attendees / Capacity</th>
               <th style={{ padding: "8px" }}>Booked By</th>
               <th style={{ padding: "8px" }}>Actions</th>
             </tr>
@@ -529,33 +529,43 @@ const Registrar: React.FC = () => {
                 </td>
               </tr>
             ) : (
-              bookings.map((b) => (
-                <tr key={b.bookingID} style={{ borderBottom: "1px solid #ddd" }}>
-                  <td style={{ padding: "8px" }}>{b.room?.building}</td>
-                  <td style={{ padding: "8px" }}>{b.room?.roomNumber}</td>
-                  <td style={{ padding: "8px" }}>{formatDateTime(b.startTime)}</td>
-                  <td style={{ padding: "8px" }}>{formatDateTime(b.endTime)}</td>
-                  <td style={{ padding: "8px" }}>{b.attendees}</td>
-                  <td style={{ padding: "8px" }}>
-                    {b.user?.username || "Unknown"}
-                  </td>
-                  <td style={{ padding: "8px" }}>
-                    <button
-                      onClick={() => cancelBooking(b.bookingID)}
-                      style={{
-                        background: "#dc3545",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 4,
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </td>
-                </tr>
-              ))
+              bookings.map((b) => {
+                const capacity = b.room.capacity;
+                const highlight = capacity > 0 && b.attendees < capacity / 2;
+                return (
+                  <tr
+                    key={b.bookingID}
+                    style={{
+                      borderBottom: "1px solid #ddd",
+                      backgroundColor: highlight ? "#ffe5e5" : undefined,
+                      color: highlight ? "#a40000" : undefined,
+                      fontWeight: highlight ? 600 : undefined,
+                    }}
+                  >
+                    <td style={{ padding: "8px" }}>{b.room?.building}</td>
+                    <td style={{ padding: "8px" }}>{b.room?.roomNumber}</td>
+                    <td style={{ padding: "8px" }}>{formatDateTime(b.startTime)}</td>
+                    <td style={{ padding: "8px" }}>{formatDateTime(b.endTime)}</td>
+                    <td style={{ padding: "8px" }}>{b.attendees} / {b.room.capacity}</td>
+                    <td style={{ padding: "8px" }}>{b.user?.username || "Unknown"}</td>
+                    <td style={{ padding: "8px" }}>
+                      <button
+                        onClick={() => cancelBooking(b.bookingID)}
+                        style={{
+                          background: "#dc3545",
+                          color: "white",
+                          border: "none",
+                          borderRadius: 4,
+                          padding: "4px 8px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
