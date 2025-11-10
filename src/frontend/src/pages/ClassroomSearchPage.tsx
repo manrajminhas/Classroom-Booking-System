@@ -144,7 +144,7 @@ const ClassRoomSearchPage: React.FC = () => {
     }
   };
 
-  // --- Updated Reserve Function ---
+  // --- Reserve Function ---
 
   const handleReserveRoom = async () => {
     if (!selectedRoomKey) {
@@ -178,7 +178,7 @@ const ClassRoomSearchPage: React.FC = () => {
         {
           startTime: startTimeISO,
           endTime: endTimeISO,
-          attendees: attendees, // UPDATED: Use the state variable
+          attendees: attendees, // Use the state variable
           username: currentUser.username,
         }
       );
@@ -239,7 +239,6 @@ const ClassRoomSearchPage: React.FC = () => {
             />
           </label>
           
-           {/* NEW ATTENDEE INPUT */}
            <label>
             Number of Attendees (for Booking):
             <input
@@ -250,7 +249,6 @@ const ClassRoomSearchPage: React.FC = () => {
               style={{ padding: 6, width: 60 }}
             />
           </label>
-          {/* END NEW ATTENDEE INPUT */}
         </div>
 
         <button 
