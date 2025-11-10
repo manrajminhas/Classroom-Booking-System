@@ -56,3 +56,5 @@ https://chatgpt.com/share/69105529-92fc-800d-adff-e4333b66c492
 
 24. What libraries or modules can I import to create a simple bar graph to visualizes the number of bookings?
 
+21. Will S: We're using React and TypeScript to build tables of bookings for a room -- I'd like to add some sort of highlight to a row on the table when the number of attendees is less than half of a room's capacity. We already have all of this info from the database, I'm just not sure how to put it together?
+https://chatgpt.com/share/691188db-4ac4-800d-81f3-e5b61ce1ca9e
