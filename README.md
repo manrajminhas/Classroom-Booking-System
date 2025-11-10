@@ -21,6 +21,16 @@ The application will then be available at ```localhost:3000```.
 
 For reference, the backend uses port 3001 and the database uses port 5432.  
 
+## Test Accounts 
+
+To ensure full coverage of all user roles (Staff, Registrar, and Admin), the following accounts have been hardcoded into the application and will be created automatically when the backend server is started:
+
+| Role | Username | Password | Notes |
+| :--- | :--- | :--- | :--- |
+| **Staff/Regular User** | `staff_user` | `password123` | Can book rooms and view/cancel their own bookings. |
+| **Registrar** | `registrar_ta` | `registrar123` | Can manage rooms (add/delete/import) and view all bookings/logs. |
+| **Admin** | `admin_ta` | `admin123` | Can view all system health data and full audit logs. |
+
 # Run Tests:
 
 We use Vitest for testing. To run our project's tests:  

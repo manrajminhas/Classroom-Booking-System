@@ -45,11 +45,17 @@ export class AppModule implements OnModuleInit {
     console.log('--- Ensuring TA Test Accounts Exist ---');
     
     const createTestUser = async (username: string, password: string, role: 'staff' | 'registrar' | 'admin') => {
+      // The 'try' block attempts the user creation.
       try {
         await this.usersService.create(username, password, role);
         console.log(`Created test user: ${username} (${role})`);
-      } catch (e) {
-        // 
+      } 
+      // The 'catch' block makes this operation safely repeatable
+      // It handles the ConflictException thrown by usersService.create()
+      // when the application starts up and the user already exists in the database
+      catch (e) {
+        // The empty catch ensures the server does not crash and the console remains clean 
+        // without creating duplicate users. 
       }
     };
     
