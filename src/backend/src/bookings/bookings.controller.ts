@@ -1,7 +1,8 @@
-import { Controller, Body, Get, Post, Delete, Param, NotFoundException, BadRequestException, ParseIntPipe } from "@nestjs/common";
+import { Controller, Body, Get, Post, Delete, Param, NotFoundException, BadRequestException, ParseIntPipe, Query } from "@nestjs/common";
 import { BookingsService } from "./bookings.service";
 import { Booking } from "./bookings.entity";
-import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam } from "@nestjs/swagger";
+import { Room } from "src/rooms/rooms.entity";
+import { ApiOperation, ApiTags, ApiResponse, ApiBody, ApiParam, ApiQuery } from "@nestjs/swagger";
 import { UsersService } from "src/users/users.service";
 import { RoomsService } from "src/rooms/rooms.service";
 import { LogsService } from "src/logs/logs.service";
@@ -22,6 +23,47 @@ export class BookingsController {
     async findAll(): Promise<Booking[]> {
         return await this.bookingsService.findAll();
     }
+
+// =========================================================================
+    // NEW: Endpoint to find available rooms
+    // =========================================================================
+    @Get('available')
+    @ApiOperation({ summary: 'Find all rooms available during a specific date and time slot' })
+    @ApiResponse({ 
+        status: 200, 
+        description: 'List of available rooms', 
+        type: Room, // Changed from [Room]
+        isArray: true // Added to specify array return type
+    })
+    @ApiQuery({ name: 'start', description: 'ISO date string for start time', required: true })
+    @ApiQuery({ name: 'end', description: 'ISO date string for end time', required: true })
+    @ApiQuery({ name: 'capacity', description: 'Minimum capacity filter (optional)', required: false, type: 'number' })
+    async findAvailableRooms(
+        @Query('start') startStr: string,
+        @Query('end') endStr: string,
+        @Query('capacity') capacityStr?: string,
+    
+    ): Promise<any> {
+        const startTime = new Date(startStr);
+        const endTime = new Date(endStr);
+        // Safely parse capacity; defaults to undefined if not provided or invalid
+        const minCapacity = capacityStr ? parseInt(capacityStr, 10) : undefined;
+
+        if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+            throw new BadRequestException('Invalid start or end time format.');
+        }
+
+        // Basic time validation
+        if (startTime >= endTime) {
+             throw new BadRequestException('Start time must be before end time.');
+        }
+
+        return this.bookingsService.findAvailableRooms(startTime, endTime, minCapacity);
+    }
+
+    // =========================================================================
+    // END NEW ENDPOINT
+    // =========================================================================
 
     @Post(':building/:roomNumber')
     @ApiResponse({ status: 200, description: 'Booking created', type: Booking })
