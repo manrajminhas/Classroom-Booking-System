@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -13,16 +13,14 @@ export class UsersService {
 
     /**
      * Finds all users.
-     * 
-     * @returns All users in the database
+     * * @returns All users in the database
      */
     async findAll(): Promise<User[]> {
         return await this.usersRepository.find();
     } 
 
     /** Finds a user with a matching username.
-     * 
-     * @param username - The username of the user to find
+     * * @param username - The username of the user to find
      * @returns The corresponding user if found, otherwise null
      */
     async findByUsername(username: string): Promise<User | null> {
@@ -31,8 +29,7 @@ export class UsersService {
 
     /**
      * Finds a user with a matching userID.
-     * 
-     * @param userID - The ID of the user to find
+     * * @param userID - The ID of the user to find
      * @returns The corresponding user if found, otherwise null
      */
     async findByID(userID: number): Promise<User | null> {
@@ -41,8 +38,7 @@ export class UsersService {
 
     /**
      * Creates a user given username and password.
-     * 
-     * @param username - Username of the user to create
+     * * @param username - Username of the user to create
      * @param password - Plaintext password of the user to create
      * @param role - Role of the user to create
      * @returns The newly created user object
@@ -61,12 +57,30 @@ export class UsersService {
         });
 
         return this.usersRepository.save(newUser);
-        }
+    }
+    
+    /**
+     * Updates a user's status (e.g., blocks or unblocks them).
+     * * @param userID - ID of the user to update
+     * @param isBlocked - New status boolean (assuming User entity has this field)
+     * @returns The updated user object
+     */
+    async updateStatus(userID: number, isBlocked: boolean): Promise<User> {
+        const user = await this.usersRepository.findOneBy({ userID });
         
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userID} not found`);
+        }
+
+
+        (user as any).isBlocked = isBlocked;
+        
+        return this.usersRepository.save(user);
+    }
+    
     /**
      * Deletes a user.
-     * 
-     * @param userID - ID of the user to delete
+     * * @param userID - ID of the user to delete
      * @returns True if delete was successful, false otherwise
      */
     async delete(userID: number): Promise<boolean> {
