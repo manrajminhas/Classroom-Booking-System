@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "room-booking": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["exec", "-i", "mcp-server", "node", "/app/dist/server.js"],
+      "env": {
+        "BACKEND_URL": "http://backend:3001"
+      }
+    }
+  }
+}

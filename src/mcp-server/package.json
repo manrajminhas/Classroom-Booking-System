@@ -9,12 +9,14 @@
     "dev": "tsx watch server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.20.2",
-    "axios": "^1.7.7"
+    "@modelcontextprotocol/sdk": "^1.21.1",
+    "axios": "^1.7.7",
+    "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^20.11.30",
     "tsx": "^4.20.6",
-    "typescript": "^5.6.3",
-    "@types/node": "^20.11.30"
+    "typescript": "^5.6.3"
   }
 }
