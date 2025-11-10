@@ -50,11 +50,11 @@ The MCP server supports 8 tools. We found that this way of running the server wo
 - In VS Code, navigate to the .vscode folder -> mcp.json
 - Click the Start button that appears
 - The following logs should appear in the Output view when "MCP: room-booking" is selected in the dropdown:
-```2025-11-09 21:02:43.882 [info] Connection state: Starting   
-2025-11-09 21:02:43.890 [info] Starting server from LocalProcess extension host  
-2025-11-09 21:02:43.891 [info] Connection state: Starting  
-2025-11-09 21:02:43.892 [info] Connection state: Running  
-2025-11-09 21:02:44.888 [info] Discovered 8 tools  ```
+```2025-11-09 21:02:43.882 [info] Connection state: Starting```  
+```2025-11-09 21:02:43.890 [info] Starting server from LocalProcess extension host```   
+```2025-11-09 21:02:43.891 [info] Connection state: Starting```  
+```2025-11-09 21:02:43.892 [info] Connection state: Running```  
+```2025-11-09 21:02:44.888 [info] Discovered 8 tools```  
 
 From there, all tools should be usable as expected.  
 
