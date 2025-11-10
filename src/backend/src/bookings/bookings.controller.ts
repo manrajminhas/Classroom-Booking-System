@@ -56,6 +56,7 @@ export class BookingsController {
     }
 
     @Post(':building/:roomNumber')
+    @ApiOperation({summary: 'Create a new booking for a specific room'})
     @ApiResponse({ status: 200, description: 'Booking created', type: Booking })
     @ApiResponse({ status: 400, description: 'Attendees exceed room capacity' })
     @ApiResponse({ status: 404, description: 'Room not found' })
