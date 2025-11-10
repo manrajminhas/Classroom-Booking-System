@@ -1,6 +1,29 @@
-import React, { useEffect, useState } from "react";
-import {BarChart,Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,} from "recharts";
+/**
+ * Registrar component
+ *
+ * A management dashboard for registrar users.
+ * Provides tools to:
+ * - Add, delete, and upload classrooms via CSV
+ * - Manage staff accounts (block / unblock users)
+ * - Cancel existing bookings
+ * - View system activity logs and analytics
+ *
+ * Displays a top-5 booked rooms chart using Recharts.
+ * All data is loaded directly from the backend API.
+ */
 
+import React, { useEffect, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
+
+/** Room row from /rooms */
 interface Room {
   roomID: number;
   building: string;
@@ -8,6 +31,7 @@ interface Room {
   capacity: number;
 }
 
+/** Booking row from /bookings */
 interface Booking {
   bookingID: number;
   startTime: string;
@@ -17,6 +41,7 @@ interface Booking {
   room: { building: string; roomNumber: string; capacity: number };
 }
 
+/** Log row from /logs/filter */
 interface Log {
   id: number;
   action: string;
@@ -31,17 +56,18 @@ interface Log {
   };
 }
 
+/** Non-admin user for management table */
 interface AppUser {
   userID: number;
   username: string;
-  role: 'staff' | 'registrar' | 'admin';
+  role: "staff" | "registrar" | "admin";
   isBlocked: boolean;
 }
 
 const API = "http://localhost:3001";
 
 const Registrar: React.FC = () => {
-  // STATES
+  // -------------------- STATE --------------------
   const [rooms, setRooms] = useState<Room[]>([]);
   const [building, setBuilding] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
@@ -51,10 +77,11 @@ const Registrar: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
-  const [users, setUsers] = useState<AppUser[]>([]); 
+  const [users, setUsers] = useState<AppUser[]>([]);
 
-  // DATA LOADING FUNCTIONS
+  // -------------------- LOADERS --------------------
 
+  /** Load rooms */
   const loadRooms = () => {
     fetch(`${API}/rooms`)
       .then((res) => res.json())
@@ -68,6 +95,7 @@ const Registrar: React.FC = () => {
       .catch((err) => console.error("Error loading rooms:", err));
   };
 
+  /** Load last 10 logs for room/booking actions */
   const loadLogs = () => {
     fetch(`${API}/logs/filter?`)
       .then((res) => res.json())
@@ -81,6 +109,7 @@ const Registrar: React.FC = () => {
       .catch((err) => console.error("Error loading logs:", err));
   };
 
+  /** Load all bookings */
   const loadBookings = () => {
     fetch(`${API}/bookings`)
       .then((res) => res.json())
@@ -88,22 +117,29 @@ const Registrar: React.FC = () => {
       .catch((err) => console.error("Error loading bookings:", err));
   };
 
-  // load all users
+  /** Load users */
   const loadUsers = () => {
-    fetch(`${API}/users`) 
+    fetch(`${API}/users`)
       .then((res) => res.json())
-      .then((data: AppUser[]) => setUsers(data.filter(u => u.role !== 'admin'))) 
+      .then((data: AppUser[]) => setUsers(data.filter((u) => u.role !== "admin")))
       .catch((err) => console.error("Error loading users:", err));
   };
 
-  // toggle user status
+  /** Toggle block/unblock for a user */
   const toggleUserStatus = async (user: AppUser) => {
     const newStatus = !user.isBlocked;
-    
-    if (!window.confirm(`Are you sure you want to ${newStatus ? 'BLOCK' : 'UNBLOCK'} user ${user.username}?`)) return;
+
+    if (
+      !window.confirm(
+        `Are you sure you want to ${newStatus ? "BLOCK" : "UNBLOCK"} user ${
+          user.username
+        }?`
+      )
+    )
+      return;
 
     try {
-      const res = await fetch(`${API}/users/${user.userID}/status`, { // Assumes PATCH endpoint
+      const res = await fetch(`${API}/users/${user.userID}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isBlocked: newStatus }),
@@ -111,11 +147,15 @@ const Registrar: React.FC = () => {
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || `Failed to ${newStatus ? 'block' : 'unblock'} user`);
+        throw new Error(text || `Failed to ${newStatus ? "block" : "unblock"} user`);
       }
 
-      alert(`User ${user.username} successfully ${newStatus ? 'BLOCKED' : 'UNBLOCKED'}.`);
-      
+      alert(
+        `User ${user.username} successfully ${
+          newStatus ? "BLOCKED" : "UNBLOCKED"
+        }.`
+      );
+
       loadUsers();
       loadLogs();
     } catch (err: any) {
@@ -123,17 +163,17 @@ const Registrar: React.FC = () => {
     }
   };
 
-  
-
+  // -------------------- MOUNT --------------------
   useEffect(() => {
     loadRooms();
     loadLogs();
     loadBookings();
-    loadUsers(); 
+    loadUsers();
   }, []);
 
-  
+  // -------------------- ACTIONS --------------------
 
+  /** Add room via POST /rooms */
   const addRoom = async () => {
     if (!building.trim() || !roomNumber.trim()) {
       alert("Enter building and room number");
@@ -174,6 +214,7 @@ const Registrar: React.FC = () => {
     }
   };
 
+  /** Delete selected room via DELETE /rooms/:building/:roomNumber */
   const deleteRoom = async () => {
     if (!selectedKey) return;
     const [b, rn] = selectedKey.split("|");
@@ -204,6 +245,7 @@ const Registrar: React.FC = () => {
     }
   };
 
+  /** Upload CSV of rooms to /rooms/upload */
   const handleUploadCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -230,8 +272,11 @@ const Registrar: React.FC = () => {
       }
 
       const result = await res.json().catch(() => ({}));
-      const count = result?.count || (Array.isArray(result) ? result.length : undefined);
-      setUploadMessage(count ? `Uploaded ${count} rooms successfully.` : "Upload successful.");
+      const count =
+        result?.count || (Array.isArray(result) ? result.length : undefined);
+      setUploadMessage(
+        count ? `Uploaded ${count} rooms successfully.` : "Upload successful."
+      );
       loadRooms();
       loadLogs();
     } catch (err: any) {
@@ -243,32 +288,36 @@ const Registrar: React.FC = () => {
     }
   };
 
+  /** Cancel a booking via DELETE /bookings/:id */
   const cancelBooking = async (bookingID: number) => {
-  if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const username = user.username;
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const username = user.username;
 
-  try {
-    const res = await fetch(`${API}/bookings/${bookingID}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
+    try {
+      const res = await fetch(`${API}/bookings/${bookingID}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "Failed to delete booking");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to delete booking");
+      }
+
+      alert("Booking cancelled!");
+      loadBookings();
+      loadLogs();
+    } catch (err: any) {
+      alert(`Error cancelling booking: ${err.message}`);
     }
+  };
 
-    alert("Booking cancelled!");
-    loadBookings();
-    loadLogs();
-  } catch (err: any) {
-    alert(`Error cancelling booking: ${err.message}`);
-  }
-};
+  // -------------------- HELPERS --------------------
 
+  /** Format ISO */
   const formatDateTime = (t?: string) => {
     if (!t) return "—";
     const date = new Date(t);
@@ -280,6 +329,7 @@ const Registrar: React.FC = () => {
     });
   };
 
+  /** Aggregate counts for top-5 chart */
   const roomCounts = bookings.reduce<Record<string, number>>((acc, b) => {
     if (!b.room) return acc;
     const key = `${b.room.building} ${b.room.roomNumber}`;
@@ -292,12 +342,12 @@ const Registrar: React.FC = () => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  
-
+  // -------------------- RENDER --------------------
   return (
     <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
       <h1>Registrar Panel</h1>
 
+      {/* Room Management */}
       <section
         style={{
           background: "#f9f9f9",
@@ -308,7 +358,7 @@ const Registrar: React.FC = () => {
         }}
       >
         <h2>Room Management</h2>
-        
+
         <div style={{ marginBottom: "1rem" }}>
           <h4>Add Room</h4>
           <input
@@ -389,9 +439,7 @@ const Registrar: React.FC = () => {
             <p
               style={{
                 marginTop: 8,
-                color: uploadMessage.startsWith("Uploaded")
-                  ? "green"
-                  : "red",
+                color: uploadMessage.startsWith("Uploaded") ? "green" : "red",
               }}
             >
               {uploadMessage}
@@ -400,7 +448,7 @@ const Registrar: React.FC = () => {
         </div>
       </section>
 
-      
+      {/* User Management */}
       <section
         style={{
           background: "#f9f9f9",
@@ -440,8 +488,14 @@ const Registrar: React.FC = () => {
                   <td style={{ padding: "8px" }}>{user.userID}</td>
                   <td style={{ padding: "8px" }}>{user.username}</td>
                   <td style={{ padding: "8px" }}>{user.role}</td>
-                  <td style={{ padding: "8px", color: user.isBlocked ? 'red' : 'green', fontWeight: 'bold' }}>
-                    {user.isBlocked ? 'BLOCKED' : 'ACTIVE'}
+                  <td
+                    style={{
+                      padding: "8px",
+                      color: user.isBlocked ? "red" : "green",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {user.isBlocked ? "BLOCKED" : "ACTIVE"}
                   </td>
                   <td style={{ padding: "8px" }}>
                     <button
@@ -455,7 +509,7 @@ const Registrar: React.FC = () => {
                         cursor: "pointer",
                       }}
                     >
-                      {user.isBlocked ? 'Unblock' : 'Block'}
+                      {user.isBlocked ? "Unblock" : "Block"}
                     </button>
                   </td>
                 </tr>
@@ -465,6 +519,7 @@ const Registrar: React.FC = () => {
         </table>
       </section>
 
+      {/* Top 5 Most Booked Rooms */}
       <section
         style={{
           background: "#f9f9f9",
@@ -493,6 +548,7 @@ const Registrar: React.FC = () => {
         )}
       </section>
 
+      {/* All Bookings */}
       <section
         style={{
           background: "#f9f9f9",
@@ -544,10 +600,18 @@ const Registrar: React.FC = () => {
                   >
                     <td style={{ padding: "8px" }}>{b.room?.building}</td>
                     <td style={{ padding: "8px" }}>{b.room?.roomNumber}</td>
-                    <td style={{ padding: "8px" }}>{formatDateTime(b.startTime)}</td>
-                    <td style={{ padding: "8px" }}>{formatDateTime(b.endTime)}</td>
-                    <td style={{ padding: "8px" }}>{b.attendees} / {b.room.capacity}</td>
-                    <td style={{ padding: "8px" }}>{b.user?.username || "Unknown"}</td>
+                    <td style={{ padding: "8px" }}>
+                      {formatDateTime(b.startTime)}
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      {formatDateTime(b.endTime)}
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      {b.attendees} / {b.room.capacity}
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      {b.user?.username || "Unknown"}
+                    </td>
                     <td style={{ padding: "8px" }}>
                       <button
                         onClick={() => cancelBooking(b.bookingID)}
@@ -571,6 +635,7 @@ const Registrar: React.FC = () => {
         </table>
       </section>
 
+      {/* Recent Activity */}
       <section>
         <h2>Recent Activity</h2>
         <table
@@ -628,6 +693,7 @@ const Registrar: React.FC = () => {
   );
 };
 
+/** Sort rooms by building, then roomNumber*/
 function sortRooms(a: Room, b: Room) {
   const ab = a.building.localeCompare(b.building);
   if (ab !== 0) return ab;

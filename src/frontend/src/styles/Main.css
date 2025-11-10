@@ -1,12 +1,12 @@
 .navBar {
-    background-color: #21232b; /* dark slate */
+    background-color: #21232b;
     padding: 1rem 2rem;
     display: flex;
     gap: 1rem;
 }
 
 .navLink {
-    color: #f1f5f9; /* light text */
+    color: #f1f5f9;
     text-decoration: none;
     font-weight: bold;
     padding: 0.5rem 1rem;
