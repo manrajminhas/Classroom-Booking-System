@@ -24,16 +24,13 @@ export class BookingsController {
         return await this.bookingsService.findAll();
     }
 
-// =========================================================================
-    // NEW: Endpoint to find available rooms
-    // =========================================================================
     @Get('available')
     @ApiOperation({ summary: 'Find all rooms available during a specific date and time slot' })
     @ApiResponse({ 
         status: 200, 
         description: 'List of available rooms', 
-        type: Room, // Changed from [Room]
-        isArray: true // Added to specify array return type
+        type: Room,
+        isArray: true
     })
     @ApiQuery({ name: 'start', description: 'ISO date string for start time', required: true })
     @ApiQuery({ name: 'end', description: 'ISO date string for end time', required: true })
@@ -42,7 +39,6 @@ export class BookingsController {
         @Query('start') startStr: string,
         @Query('end') endStr: string,
         @Query('capacity') capacityStr?: string,
-    
     ): Promise<any> {
         const startTime = new Date(startStr);
         const endTime = new Date(endStr);
@@ -52,18 +48,12 @@ export class BookingsController {
         if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
             throw new BadRequestException('Invalid start or end time format.');
         }
-
-        // Basic time validation
         if (startTime >= endTime) {
-             throw new BadRequestException('Start time must be before end time.');
+            throw new BadRequestException('Start time must be before end time.');
         }
 
         return this.bookingsService.findAvailableRooms(startTime, endTime, minCapacity);
     }
-
-    // =========================================================================
-    // END NEW ENDPOINT
-    // =========================================================================
 
     @Post(':building/:roomNumber')
     @ApiResponse({ status: 200, description: 'Booking created', type: Booking })
@@ -154,41 +144,41 @@ export class BookingsController {
     @ApiResponse({ status: 404, description: 'Booking not found' })
     @ApiBody({ description: 'Optional username of the actor performing the deletion' })
     async deleteBooking(
-    @Param('bookingID') bookingID: string,
-    @Body('username') username?: string
+        @Param('bookingID') bookingID: string,
+        @Body('username') username?: string
     ): Promise<{ message: string }> {
-    const id = Number(bookingID);
-    const deleted = await this.bookingsService.delete(id);
+        const id = Number(bookingID);
+        const deleted = await this.bookingsService.delete(id);
 
-    if (!deleted) {
-        throw new NotFoundException('Booking not found');
-    }
-
-    let actorName = 'system';
-    let actorId = 1;
-    if (username) {
-        const user = await this.usersService.findByUsername(username);
-        if (user) {
-        actorName = user.username;
-        actorId = user.userID;
-        } else if (username === 'registrar') {
-        actorName = 'registrar';
-        actorId = 0;
+        if (!deleted) {
+            throw new NotFoundException('Booking not found');
         }
-    }
 
-    await this.logsService.logAudit({
-        actorId,
-        actorName,
-        action: 'booking.delete',
-        targetType: 'booking',
-        targetId: String(id),
-        before: {},
-        after: {},
-        details: `Deleted booking ${id}`,
-    });
+        let actorName = 'system';
+        let actorId = 1;
+        if (username) {
+            const user = await this.usersService.findByUsername(username);
+            if (user) {
+            actorName = user.username;
+            actorId = user.userID;
+            } else if (username === 'registrar') {
+            actorName = 'registrar';
+            actorId = 0;
+            }
+        }
 
-    return { message: 'Booking deleted successfully' };
+        await this.logsService.logAudit({
+            actorId,
+            actorName,
+            action: 'booking.delete',
+            targetType: 'booking',
+            targetId: String(id),
+            before: {},
+            after: {},
+            details: `Deleted booking ${id}`,
+        });
+
+        return { message: 'Booking deleted successfully' };
     }
 
     @Get('date/:date')

@@ -102,25 +102,7 @@ describe('UsersService', () => {
             expect(result.passwordHash).not.toBe('abc');
         });
     });
-
-    describe('validate', () => {
-        it('should validate credentials if they are entered correctly and return the user', async () => {
-            const user = await usersService.create('123', 'abc');
-            expect(user.passwordHash).not.toBeNull();
-
-            const result = await usersService.validate('123', 'abc');
-            expect(result).toEqual(user);
-        });
-
-        it('should return null if credentials are incorrect', async () => {
-            const user = await usersService.create('abc', '123');
-            expect(user.passwordHash).not.toBeNull();
-
-            const result = await usersService.validate('123', 'abc');
-            expect(result).toBeNull();
-        });
-    });
-
+    
     describe('delete', () => {
         it('should delete an existing user and return true', async () => {
             const saved = await usersRepository.save({ username: 'todelete', passwordHash: 'h' });

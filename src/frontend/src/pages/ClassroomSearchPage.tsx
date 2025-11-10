@@ -50,7 +50,7 @@ const ClassRoomSearchPage: React.FC = () => {
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
   const [minCapacity, setMinCapacity] = useState<number>(1);
-  const [buildingFilter, setBuildingFilter] = useState<string>(''); // NEW: Building filter state
+  const [buildingFilter, setBuildingFilter] = useState<string>('');
 
   // Results & Selection
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
@@ -87,8 +87,6 @@ const ClassRoomSearchPage: React.FC = () => {
     setSelectedRoomKey(event.target.value);
   };
 
-  // --- New Search Function ---
-
   const handleSearch = async () => {
     if (!selectedDate || !selectedStartTime || !selectedEndTime) {
       setSearchMessage("Please select a date, start time, and end time.");
@@ -111,7 +109,6 @@ const ClassRoomSearchPage: React.FC = () => {
     }
 
     try {
-      // Calls the new backend availability endpoint
       const res = await axios.get(`${API}/bookings/available`, {
         params: {
           start: startTimeISO,
@@ -136,8 +133,6 @@ const ClassRoomSearchPage: React.FC = () => {
       setSearchMessage(err.response?.data?.message || "Search failed due to a server error.");
     }
   };
-
-  // --- Updated Reserve Function ---
 
   const handleReserveRoom = async () => {
     if (!selectedRoomKey) {
@@ -180,7 +175,6 @@ const ClassRoomSearchPage: React.FC = () => {
       alert(err.response?.data?.message || "Failed to create booking. Check if the room is still available.");
     }
   };
-
 
   return (
     <div className="Search-group" style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>
@@ -250,7 +244,6 @@ const ClassRoomSearchPage: React.FC = () => {
         <h3>2. Available Rooms</h3>
         <p style={{ fontStyle: 'italic' }}>{searchMessage}</p>
 
-        {/* NEW: Building Filter is applied only after rooms are fetched */}
         {availableRooms.length > 0 && (
             <div style={{ marginBottom: '10px' }}>
                 <label>

@@ -62,22 +62,7 @@ export class UsersService {
 
         return this.usersRepository.save(newUser);
         }
-
-    /**
-     * Validates a user's login credentials.
-     * 
-     * @param username - Username of the user to validate
-     * @param password - Plaintext password of the user to validate
-     * @returns The corresponding user if the username and password match, null otherwise
-     */
-    async validate(username: string, password: string): Promise<User | null> {
-        const user = await this.findByUsername(username);
-        if (user && await bcrypt.compare(password, user.passwordHash)) {
-            return user;
-        }
-        return null;
-    }
-
+        
     /**
      * Deletes a user.
      * 

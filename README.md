@@ -32,6 +32,8 @@ To view code coverage, use the following command instead:
 
 ```npx vitest run --coverage```  
 
-# Acceptance Tests
+Current coverage:  
+
+# Acceptance Tests:
 
 Coming soon
