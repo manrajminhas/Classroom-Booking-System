@@ -21,7 +21,6 @@ https://chatgpt.com/share/69105500-f168-800d-9fc1-889a74fa1c34
 7. Will S: How do I use Swagger for TypeScript and Nest documentation?
 
 8. Will S: How can I remove a private attribute, like a password hash, before returning in TypeScript?
-https://gemini.google.com/app/1266002057c3f991
 
 9. Will S: How do I set up Vitest for my TypeScript project?
 https://chatgpt.com/share/69105518-7004-800d-9edf-8577c0fb3964
@@ -46,3 +45,14 @@ https://chatgpt.com/share/69105529-92fc-800d-adff-e4333b66c492
 18. Will S: What does a typical Gitlab CI file look like for a NestJS project containing a backend, frontend, and mcp server? https://chatgpt.com/share/6909c21b-0354-800d-9021-362774a04b50 
 
 19. Will S: What does a typical Vitest test suite look like for a roles guard with NestJS? https://chatgpt.com/share/6910548d-8248-800d-9aa8-57f6f2ae6443
+
+20. Max: I’m getting a “Start time cannot be in the past” error when booking a room for tomorrow in my NestJS backend, can you help me debug the time comparison logic?
+
+21. Max: In my bookings.service.ts, how should I properly handle timezone conversion so that users can book future times?
+
+22. Max: How can I implement role-based authentication in NestJS using Guards so that only specific user roles can access protected routes?
+
+23. Max: How can I use Safari’s Web Inspector to debug booking requests from my React frontend to the NestJS backend?
+
+24. What libraries or modules can I import to create a simple bar graph to visualizes the number of bookings?
+
