@@ -1,3 +1,13 @@
+/**
+ * SignIn component
+ * 
+ * Handles user authentication by sending login credentials
+ * to the backend (`/users/login`) and saving the returned
+ * access token and user info to localStorage.
+ * 
+ * Redirects to the dashboard after successful login.
+ */
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,11 +16,16 @@ interface SignInProps {
 }
 
 const SignIn: React.FC<SignInProps> = ({ onLogin }) => {
+  // -------------------- STATE --------------------
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  /**
+   * Handles login submission by sending POST request to backend.
+   * On success, stores token + user in localStorage and navigates to HomePage.
+   */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -37,9 +52,11 @@ const SignIn: React.FC<SignInProps> = ({ onLogin }) => {
     }
   };
 
+  // -------------------- RENDER --------------------
   return (
     <div className="signin-container">
       <h1>Sign In</h1>
+
       <form onSubmit={handleLogin}>
         <div>
           <label>Username:</label>

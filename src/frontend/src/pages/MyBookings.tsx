@@ -1,7 +1,16 @@
+/**
+ * MyBookings component
+ *
+ * Displays the logged-in user's classroom bookings.
+ * Shows both upcoming and past bookings, and allows users to cancel upcoming ones.
+ * Fetches booking data from the backend using the stored username.
+ */
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/MyBookings.css';
 
+/** Structure of a booking returned from the backend */
 interface Booking {
   bookingID: number;
   startTime: string;
@@ -20,10 +29,10 @@ const MyBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const formatDisplayDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString();
-  };
+  /** Formats ISO date strings for display */
+  const formatDisplayDate = (dateStr: string) => new Date(dateStr).toLocaleString();
 
+  /** Fetches upcoming and past bookings for the logged-in user */
   const fetchBookings = async () => {
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
@@ -57,27 +66,22 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  /** Loads bookings on component mount */
   useEffect(() => {
     fetchBookings();
   }, []);
 
+  /** Cancels an upcoming booking and updates the list */
   const handleCancel = async (bookingID: number) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) {
-      return;
-    }
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
 
     const storedUser = localStorage.getItem('user');
     const user = storedUser ? JSON.parse(storedUser) : {};
     const username = user?.username;
 
     try {
-      await axios.delete(`${API_URL}/bookings/${bookingID}`, {
-        data: { username }
-      });
-      
-      setUpcomingBookings((prev) =>
-        prev.filter((b) => b.bookingID !== bookingID)
-      );
+      await axios.delete(`${API_URL}/bookings/${bookingID}`, { data: { username } });
+      setUpcomingBookings(prev => prev.filter(b => b.bookingID !== bookingID));
       alert('Booking cancelled successfully.');
     } catch (err) {
       console.error('Failed to cancel booking:', err);
@@ -85,13 +89,10 @@ const MyBookings: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <div>Loading your bookings...</div>;
-  }
+  /* ----------------------------- Render ----------------------------- */
 
-  if (error) {
-    return <div style={{ color: 'red' }}>{error}</div>;
-  }
+  if (loading) return <div>Loading your bookings...</div>;
+  if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
     <div>
@@ -108,7 +109,7 @@ const MyBookings: React.FC = () => {
         </thead>
         <tbody>
           {upcomingBookings.length > 0 ? (
-            upcomingBookings.map((booking) => (
+            upcomingBookings.map(booking => (
               <tr key={booking.bookingID}>
                 <td className="table-body">{booking.bookingID}</td>
                 <td className="table-body">
@@ -148,7 +149,7 @@ const MyBookings: React.FC = () => {
         </thead>
         <tbody>
           {pastBookings.length > 0 ? (
-            pastBookings.map((booking) => (
+            pastBookings.map(booking => (
               <tr key={booking.bookingID}>
                 <td className="table-body">{booking.bookingID}</td>
                 <td className="table-body">
