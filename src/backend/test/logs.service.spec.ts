@@ -110,4 +110,15 @@ describe('LogsService', () => {
         expect(res).toHaveLength(2);
         expect(res[0].action.startsWith('booking.')).toBe(true);
     });
+
+    it('returns empty arrays when no logs match', async () => {
+        const all = await logsService.getAllLogs();
+        expect(all).toEqual([]);
+
+        const byActor = await logsService.getLogsFiltered({ actorUsername: 'noone', action: null, from: null, to: null });
+        expect(byActor).toHaveLength(0);
+
+        const byActions = await logsService.getLogsFilteredByActions(['nonsense.']);
+        expect(byActions).toHaveLength(0);
+    });
 });

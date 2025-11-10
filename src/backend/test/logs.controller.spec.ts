@@ -94,4 +94,55 @@ describe('LogsController', () => {
 		});
 		expect(res).toEqual(created);
 	});
+
+	it('getLogsFiltered handles missing dates as nulls', async () => {
+		(mockLogsService.getLogsFiltered as any).mockResolvedValue([]);
+		await controller.getLogsFiltered(null, null, null, null);
+		expect(mockLogsService.getLogsFiltered).toHaveBeenCalledWith({
+			actorUsername: null,
+			action: null,
+			from: null,
+			to: null,
+		});
+	});
+
+	it('getLogsFiltered propagates service errors', async () => {
+		(mockLogsService.getLogsFiltered as any).mockRejectedValue(new Error('bad dates'));
+		await expect(controller.getLogsFiltered('x','y','bad','also-bad')).rejects.toThrow('bad dates');
+	});
+
+	it('addLog preserves before/after and maps undefined to null', async () => {
+		const body = {
+			userId: 10,
+			action: 'room.update',
+			actorUsername: undefined,
+			targetType: 'room',
+			targetId: '55',
+			before: { name: 'old' },
+			after: { name: 'new' },
+			reason: undefined,
+			details: undefined,
+		} as any;
+		const created = { id: 123 };
+		(mockLogsService.createLog as any).mockResolvedValue(created);
+		const res = await controller.addLog(body);
+		expect(mockLogsService.createLog).toHaveBeenCalledWith({
+			userId: 10,
+			action: 'room.update',
+			actorUsername: null,
+			targetType: 'room',
+			targetId: '55',
+			before: { name: 'old' },
+			after: { name: 'new' },
+			reason: null,
+			details: null,
+		});
+		expect(res).toEqual(created);
+	});
+
+	it('addLog propagates service errors', async () => {
+		const body = { userId: 1, action: 'a' } as any;
+		(mockLogsService.createLog as any).mockRejectedValue(new Error('db down'));
+		await expect(controller.addLog(body)).rejects.toThrow('db down');
+	});
 });
