@@ -175,29 +175,29 @@ export class RoomsController {
     @ApiResponse({ status: 400, description: 'No file was uploaded' })
     @ApiResponse({ status: 404, description: 'No rooms to add were found'})
     @UseInterceptors(FileInterceptor('file'))
-    async uploadCSV(@UploadedFile() file: Express.Multer.File): Promise<Room[]> {
-        if (!file) {
-            throw new BadRequestException('No file uploaded');
-        }
-
-        const saved = await this.roomsService.addFromCSV(file);
-
-        if(!saved || saved.length == 0) {
-            throw new NotFoundException('No rooms were found in the file');
-        }
-
-        await this.logsService.logAudit({
-            actorId: 1,
-            actorName: 'system',
-            action: 'room.importCsv',
-            targetType: 'room',
-            targetId: 'bulk',
-            after: { count: saved.length },
-            details: `Imported ${saved.length} rooms from CSV`,
-        });
-
-        return saved;
+    async uploadCSV(@UploadedFile() file: Express.Multer.File, @Body('username') username?: string): Promise<Room[]> {
+    if (!file) {
+        throw new BadRequestException('No file uploaded');
     }
+
+    const saved = await this.roomsService.addFromCSV(file);
+
+    if (!saved || saved.length == 0) {
+        throw new NotFoundException('No rooms were found in the file');
+    }
+
+    await this.logsService.logAudit({
+        actorId: 1,
+        actorName: username || 'unknown_user',
+        action: 'room.importCsv',
+        targetType: 'room',
+        targetId: 'bulk',
+        after: { count: saved.length },
+        details: `Imported ${saved.length} rooms from CSV`,
+    });
+
+    return saved;
+}
     
     @Delete()
     @ApiOperation({ summary: 'Delete all rooms from the database' })

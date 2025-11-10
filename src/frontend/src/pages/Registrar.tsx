@@ -146,11 +146,15 @@ const Registrar: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const username = user.username;
+
     setUploading(true);
     setUploadMessage("");
 
     const formData = new FormData();
     formData.append("file", file);
+    if (username) formData.append("username", username);
 
     try {
       const res = await fetch(`${API}/rooms/upload`, {
@@ -164,13 +168,8 @@ const Registrar: React.FC = () => {
       }
 
       const result = await res.json().catch(() => ({}));
-      const count =
-        result?.count || (Array.isArray(result) ? result.length : undefined);
-      setUploadMessage(
-        count
-          ? `Uploaded ${count} rooms successfully.`
-          : "Upload successful."
-      );
+      const count = result?.count || (Array.isArray(result) ? result.length : undefined);
+      setUploadMessage(count ? `Uploaded ${count} rooms successfully.` : "Upload successful.");
       loadRooms();
       loadLogs();
     } catch (err: any) {
