@@ -51,9 +51,6 @@ const ClassRoomSearchPage: React.FC = () => {
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
   const [minCapacity, setMinCapacity] = useState<number>(1);
   const [buildingFilter, setBuildingFilter] = useState<string>('');
-  
-  // NEW STATE: Field for actual number of attendees
-  const [attendees, setAttendees] = useState<number>(1); 
 
   // Results & Selection
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
@@ -95,8 +92,6 @@ const ClassRoomSearchPage: React.FC = () => {
   const handleRoomSelection = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedRoomKey(event.target.value);
   };
-
-  // --- Search Function (Unchanged, uses minCapacity) ---
 
   const handleSearch = async () => {
     if (!selectedDate || !selectedStartTime || !selectedEndTime) {
@@ -144,8 +139,6 @@ const ClassRoomSearchPage: React.FC = () => {
     }
   };
 
-  // --- Reserve Function ---
-
   const handleReserveRoom = async () => {
     if (!selectedRoomKey) {
       alert("Please select an available room from the search results first!");
@@ -190,7 +183,6 @@ const ClassRoomSearchPage: React.FC = () => {
       alert(err.response?.data?.message || "Failed to create booking. Check if the room is still available.");
     }
   };
-
 
   return (
     <div className="Search-group" style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>

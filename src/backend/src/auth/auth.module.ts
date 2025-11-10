@@ -5,6 +5,8 @@ import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 
+// Using JWT
+
 @Module({
   imports: [
     PassportModule,
