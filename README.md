@@ -32,10 +32,11 @@ To ensure full coverage of all user roles (Staff, Registrar, and Admin), the fol
 
 # Run Tests:
 
-We use Vitest for testing. To run our project's backend tests:  
+We use Vitest for testing. Make sure it's installed before trying it! (```npm install --save-dev vitest```)  
+To run our project's backend tests:  
 
 ```cd src/backend```  
-```npm run test```  
+```npx vitest run```  
 
 To view code coverage, use the following command instead:  
 
