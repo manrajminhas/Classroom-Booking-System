@@ -49,9 +49,12 @@ const ClassRoomSearchPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
-  const [minCapacity, setMinCapacity] = useState<number>(1);
+  
+  // MERGED STATE: 'attendees' now handles both search capacity and booking attendees
+  const [attendees, setAttendees] = useState<number>(1); 
+  
   const [buildingFilter, setBuildingFilter] = useState<string>('');
-
+  
   // Results & Selection
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [selectedRoomKey, setSelectedRoomKey] = useState<string>('');
@@ -74,15 +77,10 @@ const ClassRoomSearchPage: React.FC = () => {
     setBuildingFilter('');
   };
   
-  // Handler for Minimum Capacity filter (used for search)
-  const handleMinCapacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMinCapacity(parseInt(event.target.value) || 1);
-    setBuildingFilter('');
-  };
-  
-  // NEW HANDLER: For the actual number of attendees for the booking
+  // MERGED HANDLER: Updates attendees, which will be used for both search and booking
   const handleAttendeesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAttendees(parseInt(event.target.value) || 1);
+    setBuildingFilter('');
   };
   
   const handleBuildingFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -92,6 +90,8 @@ const ClassRoomSearchPage: React.FC = () => {
   const handleRoomSelection = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedRoomKey(event.target.value);
   };
+
+  // --- Search Function (Uses 'attendees' for capacity filter) ---
 
   const handleSearch = async () => {
     if (!selectedDate || !selectedStartTime || !selectedEndTime) {
@@ -118,8 +118,8 @@ const ClassRoomSearchPage: React.FC = () => {
         params: {
           start: startTimeISO,
           end: endTimeISO,
-          // Use minCapacity for the search query filter
-          capacity: minCapacity > 1 ? minCapacity : undefined, 
+          // CORRECT: Use the 'attendees' state directly for the search capacity filter
+          capacity: attendees > 1 ? attendees : undefined, 
         }
       });
       
@@ -138,6 +138,8 @@ const ClassRoomSearchPage: React.FC = () => {
       setSearchMessage(err.response?.data?.message || "Search failed due to a server error.");
     }
   };
+
+  // --- Reserve Function ---
 
   const handleReserveRoom = async () => {
     if (!selectedRoomKey) {
@@ -171,7 +173,8 @@ const ClassRoomSearchPage: React.FC = () => {
         {
           startTime: startTimeISO,
           endTime: endTimeISO,
-          attendees: attendees, // Use the state variable
+          // CORRECT: Uses the single 'attendees' state variable for the final booking count
+          attendees: attendees, 
           username: currentUser.username,
         }
       );
@@ -183,6 +186,7 @@ const ClassRoomSearchPage: React.FC = () => {
       alert(err.response?.data?.message || "Failed to create booking. Check if the room is still available.");
     }
   };
+
 
   return (
     <div className="Search-group" style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>
@@ -219,26 +223,16 @@ const ClassRoomSearchPage: React.FC = () => {
           </label>
         </div>
 
-        <div style={{ marginTop: '10px', display: 'flex', gap: '20px' }}>
+        <div style={{ marginTop: '10px' }}>
            <label>
-            Min Capacity (Search Filter):
-            <input
-              type="number"
-              min="1"
-              value={minCapacity}
-              onChange={handleMinCapacityChange}
-              style={{ marginRight: 20, padding: 6, width: 60 }}
-            />
-          </label>
-          
-           <label>
-            Number of Attendees (for Booking):
+            Number of Attendees:
             <input
               type="number"
               min="1"
               value={attendees}
               onChange={handleAttendeesChange}
               style={{ padding: 6, width: 60 }}
+              title="This value filters rooms (Min Capacity) and sets the final booking attendee count."
             />
           </label>
         </div>
