@@ -59,13 +59,13 @@ export class RoomsController {
     @ApiResponse({ status: 201, description: 'The room has been added', type: Room })
     @ApiResponse({ status: 400, description: 'Invalid room data' })
     @ApiResponse({ status: 409, description: 'The room already exists' })
-    async create(@Body() room: Omit<Room, 'roomID'>): Promise<Room> {
+    async create(@Body() room: Omit<Room, 'roomID'>, @Body('username') username?: string): Promise<Room> {
         try {
             const created = await this.roomsService.create(room);
 
             await this.logsService.logAudit({
                 actorId: 1,
-                actorName: 'system',
+                actorName: username || 'system',
                 action: 'room.create',
                 targetType: 'room',
                 targetId: String(created.roomID),
@@ -80,8 +80,7 @@ export class RoomsController {
             });
 
             return created;
-        }
-        catch (error: any) {
+        } catch (error: any) {
             if (error.message?.includes('capacity') || error.message?.includes('Building and room number')) {
                 throw new BadRequestException(error.message);
             }
@@ -139,12 +138,13 @@ export class RoomsController {
     @Delete(':building/:roomNumber')
     @ApiOperation({ summary: 'Delete a room given building and room number' })
     @ApiResponse({ status: 204, description: 'Room deleted' })
-    @ApiResponse({ status: 404, description: 'Room not found' })  
+    @ApiResponse({ status: 404, description: 'Room not found' })
     @ApiParam({ name: 'building', description: 'Building containing the room to delete' })
-    @ApiParam({ name: 'roomNumber', description: 'Number of the room to delete' })  
+    @ApiParam({ name: 'roomNumber', description: 'Number of the room to delete' })
     async delete(
         @Param('building') building: string,
-        @Param('roomNumber') roomNumber: string
+        @Param('roomNumber') roomNumber: string,
+        @Body('username') username?: string
     ): Promise<void> {
         const before = await this.roomsService.findByLocation(building, roomNumber);
         if (!before) {
@@ -154,7 +154,7 @@ export class RoomsController {
 
         await this.logsService.logAudit({
             actorId: 1,
-            actorName: 'system',
+            actorName: username || 'system',
             action: 'room.delete',
             targetType: 'room',
             targetId: String(before.roomID),
