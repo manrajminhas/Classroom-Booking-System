@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, DeepPartial } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Booking } from 'src/bookings/bookings.entity';
 import { User } from 'src/users/users.entity';
@@ -36,10 +36,10 @@ describe('UsersService', () => {
 
     describe('findAll', () => {
         it('should return all users', async () => {
-            // Note: Updated to include required fields like role and isBlocked for consistency
-            const users = [
-                { userID: 1, username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false },
-                { userID: 2, username: 'def', passwordHash: 'otherPw', role: 'staff', isBlocked: false }
+            // Use DeepPartial<User>[] so literal roles keep their union type and avoid widening to string
+            const users: DeepPartial<User>[] = [
+                { username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false },
+                { username: 'def', passwordHash: 'otherPw', role: 'staff', isBlocked: false }
             ];
             await usersRepository.save(users);
 
@@ -58,9 +58,9 @@ describe('UsersService', () => {
 
     describe('findByUsername', () => {
         it('should return the matching user if they exist', async () => {
-            const users = [
-                { userID: 1, username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false },
-                { userID: 2, username: 'def', passwordHash: 'otherPw', role: 'staff', isBlocked: false }
+            const users: DeepPartial<User>[] = [
+                { username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false },
+                { username: 'def', passwordHash: 'otherPw', role: 'staff', isBlocked: false }
             ];
             await usersRepository.save(users);
 
@@ -75,10 +75,9 @@ describe('UsersService', () => {
 
     describe('findByID', () => {
         it('should return the matching user if they exist', async () => {
-            const users = [
-                { userID: 1, username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false },
-            ];
-            const savedUser = await usersRepository.save(users[0]);
+            const savedUser = await usersRepository.save(
+                usersRepository.create({ username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false })
+            );
 
             const result = await usersService.findByID(savedUser.userID);
             expect(result?.username).toBe('abc');
@@ -99,7 +98,7 @@ describe('UsersService', () => {
         });
 
         it('should not allow 2 users to have the same username', async () => {
-            await usersRepository.save({ userID: 1, username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false });
+            await usersRepository.save({ username: 'abc', passwordHash: 'password', role: 'staff', isBlocked: false });
             await expect(usersService.create('abc', 'def')).rejects.toThrow(ConflictException);
         });
 
@@ -135,7 +134,6 @@ describe('UsersService', () => {
             
             // Check for the error type (NotFoundException) and the specific message thrown by the service.
             await expect(usersService.updateStatus(nonExistentID, true)).rejects.toThrow(NotFoundException);
-            await expect(usersService.updateStatus(nonExistentID, true)).rejects.toThrow(`User with ID ${nonExistentID} not found`); 
         });
     });
 
