@@ -71,7 +71,7 @@ const Registrar: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [building, setBuilding] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
-  const [capacity, setCapacity] = useState<number>(12);
+  const [capacity, setCapacity] = useState<number>(0);
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [logs, setLogs] = useState<Log[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -206,7 +206,7 @@ const Registrar: React.FC = () => {
       alert("Room added!");
       setBuilding("");
       setRoomNumber("");
-      setCapacity(12);
+      setCapacity(0);
       loadRooms();
       loadLogs();
     } catch (err: any) {
