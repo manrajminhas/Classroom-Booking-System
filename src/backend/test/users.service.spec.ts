@@ -133,7 +133,7 @@ describe('UsersService', () => {
         it('should throw NotFoundException if the user ID does not exist', async () => {
             const nonExistentID = 9999;
             
-            // CORRECTED: Check for the error type (NotFoundException) and the specific message thrown by the service.
+            // Check for the error type (NotFoundException) and the specific message thrown by the service.
             await expect(usersService.updateStatus(nonExistentID, true)).rejects.toThrow(NotFoundException);
             await expect(usersService.updateStatus(nonExistentID, true)).rejects.toThrow(`User with ID ${nonExistentID} not found`); 
         });
