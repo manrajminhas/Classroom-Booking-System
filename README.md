@@ -43,10 +43,14 @@ To view code coverage, use the following command instead:
 
 All relevant source and controller files have more than 75% branch coverage.  
 
-To run our frontend tests:  
+To run our project's frontend tests:
 
-```cd src/frontend``` 
+```cd src/frontend```  
+```npx vitest run```  
 
+To view code coverage, use the following command instead:  
+
+```npx vitest run --coverage```  
 
 # Acceptance Tests:
 
@@ -94,6 +98,10 @@ API endpoints are exposed through individual controllers in the backend, allowin
 # CI:
 
 A specific `.gitlab-ci.yml` for our project is located in the project's root, although it is not currently functional.  
+
+# System Health:
+
+Available at http://localhost:3000/Admin
 
 # Further Documentation:
 
