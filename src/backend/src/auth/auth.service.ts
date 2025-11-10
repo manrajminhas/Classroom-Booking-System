@@ -13,6 +13,11 @@ export class AuthService {
   async validateUser(username: string, password: string) {
     const user = await this.usersService.findByUsername(username);
     if (!user) throw new UnauthorizedException('Invalid credentials');
+    
+
+    if ((user as any).isBlocked) {
+        throw new UnauthorizedException('Account is currently blocked.');
+    }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');

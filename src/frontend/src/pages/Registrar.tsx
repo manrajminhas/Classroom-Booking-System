@@ -31,9 +31,17 @@ interface Log {
   };
 }
 
+interface AppUser {
+  userID: number;
+  username: string;
+  role: 'staff' | 'registrar' | 'admin';
+  isBlocked: boolean;
+}
+
 const API = "http://localhost:3001";
 
 const Registrar: React.FC = () => {
+  // STATES
   const [rooms, setRooms] = useState<Room[]>([]);
   const [building, setBuilding] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
@@ -43,12 +51,9 @@ const Registrar: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [users, setUsers] = useState<AppUser[]>([]); // CORRECT: User state declared here
 
-  useEffect(() => {
-    loadRooms();
-    loadLogs();
-    loadBookings();
-  }, []);
+  // DATA LOADING FUNCTIONS
 
   const loadRooms = () => {
     fetch(`${API}/rooms`)
@@ -82,6 +87,52 @@ const Registrar: React.FC = () => {
       .then((data: Booking[]) => setBookings(data))
       .catch((err) => console.error("Error loading bookings:", err));
   };
+
+  // load all users
+  const loadUsers = () => {
+    fetch(`${API}/users`) 
+      .then((res) => res.json())
+      .then((data: AppUser[]) => setUsers(data.filter(u => u.role !== 'admin'))) 
+      .catch((err) => console.error("Error loading users:", err));
+  };
+
+  // toggle user status
+  const toggleUserStatus = async (user: AppUser) => {
+    const newStatus = !user.isBlocked;
+    
+    if (!window.confirm(`Are you sure you want to ${newStatus ? 'BLOCK' : 'UNBLOCK'} user ${user.username}?`)) return;
+
+    try {
+      const res = await fetch(`${API}/users/${user.userID}/status`, { // Assumes PATCH endpoint
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isBlocked: newStatus }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to ${newStatus ? 'block' : 'unblock'} user`);
+      }
+
+      alert(`User ${user.username} successfully ${newStatus ? 'BLOCKED' : 'UNBLOCKED'}.`);
+      
+      loadUsers();
+      loadLogs();
+    } catch (err: any) {
+      alert(`Error updating user status: ${err.message}`);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    loadRooms();
+    loadLogs();
+    loadBookings();
+    loadUsers(); 
+  }, []);
+
+  
 
   const addRoom = async () => {
     if (!building.trim() || !roomNumber.trim()) {
@@ -230,6 +281,8 @@ const Registrar: React.FC = () => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
+  
+
   return (
     <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
       <h1>Registrar Panel</h1>
@@ -244,7 +297,7 @@ const Registrar: React.FC = () => {
         }}
       >
         <h2>Room Management</h2>
-
+        
         <div style={{ marginBottom: "1rem" }}>
           <h4>Add Room</h4>
           <input
@@ -334,6 +387,71 @@ const Registrar: React.FC = () => {
             </p>
           )}
         </div>
+      </section>
+
+      {/* CORRECTED: User Management Section */}
+      <section
+        style={{
+          background: "#f9f9f9",
+          borderRadius: "8px",
+          padding: "1rem",
+          marginBottom: "2rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2>User Management</h2>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "1rem",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#efefef", textAlign: "left" }}>
+              <th style={{ padding: "8px" }}>User ID</th>
+              <th style={{ padding: "8px" }}>Username</th>
+              <th style={{ padding: "8px" }}>Role</th>
+              <th style={{ padding: "8px" }}>Status</th>
+              <th style={{ padding: "8px" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: "center", color: "#888" }}>
+                  No users available to manage
+                </td>
+              </tr>
+            ) : (
+              users.map((user) => (
+                <tr key={user.userID} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td style={{ padding: "8px" }}>{user.userID}</td>
+                  <td style={{ padding: "8px" }}>{user.username}</td>
+                  <td style={{ padding: "8px" }}>{user.role}</td>
+                  <td style={{ padding: "8px", color: user.isBlocked ? 'red' : 'green', fontWeight: 'bold' }}>
+                    {user.isBlocked ? 'BLOCKED' : 'ACTIVE'}
+                  </td>
+                  <td style={{ padding: "8px" }}>
+                    <button
+                      onClick={() => toggleUserStatus(user)}
+                      style={{
+                        background: user.isBlocked ? "#28a745" : "#ffc107",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 4,
+                        padding: "4px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {user.isBlocked ? 'Unblock' : 'Block'}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </section>
 
       <section

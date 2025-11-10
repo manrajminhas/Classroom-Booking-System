@@ -16,6 +16,9 @@ export class User {
     @Column({ type: 'varchar', default: 'staff' })
     role: 'staff' | 'registrar' | 'admin';
 
+    @Column({ default: false })
+    isBlocked: boolean; 
+
     @OneToMany(() => Booking, (booking) => booking.user)
     bookings: Booking[];
 }

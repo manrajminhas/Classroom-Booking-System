@@ -1,8 +1,13 @@
-import { Controller, Body, Get, Post, Delete, Param, NotFoundException, ConflictException, UnauthorizedException } from "@nestjs/common";
+import { Controller, Body, Get, Post, Delete, Param, NotFoundException, ConflictException, UnauthorizedException, Patch, ParseIntPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { AuthService } from "../auth/auth.service";
 import { PublicUser, User } from "./users.entity";
-import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from "@nestjs/swagger";
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody, ApiProperty } from "@nestjs/swagger";
+
+class UpdateStatusDto {
+    @ApiProperty({ example: true, description: 'True to block the user, false to unblock.' })
+    isBlocked: boolean;
+}
 
 @ApiTags('users')
 @Controller('users')
@@ -18,6 +23,24 @@ export class UsersController {
     async findAll(): Promise<PublicUser[]> {
         const users = await this.usersService.findAll();
         return users.map(({ passwordHash, ...secureUser }) => secureUser);
+    }
+
+    @Patch(':userID/status')
+    @ApiOperation({ summary: 'Update a user\'s block status' })
+    @ApiResponse({ status: 200, description: 'User status updated.' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    @ApiParam({ name: 'userID', description: 'ID of the user to block/unblock' })
+    @ApiBody({ type: UpdateStatusDto })
+    async updateStatus(
+        @Param('userID', ParseIntPipe) userID: number,
+        @Body() body: UpdateStatusDto,
+    ): Promise<{ message: string; isBlocked: boolean }> {
+        const updatedUser = await this.usersService.updateStatus(userID, body.isBlocked);
+        
+        return { 
+            message: `User status for ID ${userID} updated.`,
+            isBlocked: (updatedUser as any).isBlocked 
+        };
     }
 
     @Get(':username')
