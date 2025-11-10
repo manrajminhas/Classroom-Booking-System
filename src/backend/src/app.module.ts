@@ -47,7 +47,7 @@ export class AppModule implements OnModuleInit {
     const createTestUser = async (username: string, password: string, role: 'staff' | 'registrar' | 'admin') => {
       try {
         await this.usersService.create(username, password, role);
-        console.log(`✅ Created test user: ${username} (${role})`);
+        console.log(`Created test user: ${username} (${role})`);
       } catch (e) {
         // 
       }
