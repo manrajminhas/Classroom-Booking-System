@@ -140,10 +140,14 @@ const Registrar: React.FC = () => {
       return;
     }
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const username = user.username;
+
     const payload = {
       building: building.trim(),
       roomNumber: roomNumber.trim(),
       capacity: Number(capacity),
+      username,
     };
 
     try {
@@ -175,9 +179,16 @@ const Registrar: React.FC = () => {
     const [b, rn] = selectedKey.split("|");
 
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const username = user.username;
+
       const res = await fetch(
         `${API}/rooms/${encodeURIComponent(b)}/${encodeURIComponent(rn)}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+        }
       );
 
       if (!res.ok) {
