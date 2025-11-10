@@ -51,7 +51,7 @@ const Registrar: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
-  const [users, setUsers] = useState<AppUser[]>([]); // CORRECT: User state declared here
+  const [users, setUsers] = useState<AppUser[]>([]); 
 
   // DATA LOADING FUNCTIONS
 
@@ -389,7 +389,7 @@ const Registrar: React.FC = () => {
         </div>
       </section>
 
-      {/* CORRECTED: User Management Section */}
+      
       <section
         style={{
           background: "#f9f9f9",
